@@ -2,7 +2,7 @@ import Link from "next/link";
 import { MetricCard } from "@/components/MetricCard";
 import { PageHeader } from "@/components/PageHeader";
 import ParentShell from "@/components/ParentShell";
-import { demoAlerts, getUser, initialMetrics, parentInsights } from "@/src/data/demoData";
+import { getDemoUser, getParentInsight, getYouthAlerts, getYouthMetrics } from "@/src/lib/data/dbBacked";
 
 const labelFor = {
   FUNCTIONAL: "Understands health information",
@@ -12,9 +12,10 @@ const labelFor = {
 
 export default async function YouthInsightPage({ params }: { params: Promise<{ youthId: string }> }) {
   const { youthId } = await params;
-  const youth = getUser(youthId);
-  const metrics = initialMetrics[youth.id] ?? [];
-  const insight = parentInsights[youth.id as keyof typeof parentInsights] ?? parentInsights.asha;
+  const youth = await getDemoUser(youthId, "YOUTH");
+  const metrics = await getYouthMetrics(youth.id);
+  const insight = await getParentInsight(youth.id);
+  const alerts = await getYouthAlerts(youth.id);
   return (
     <ParentShell>
       <PageHeader title={`${youth.name} support overview`} kicker="Summary-based visibility">resi protects youth autonomy. You see supportive summaries and safety alerts, not private chat logs by default.</PageHeader>
@@ -38,7 +39,7 @@ export default async function YouthInsightPage({ params }: { params: Promise<{ y
           <div className="chip-row"><Link className="button" href={`/parent/${youth.id}/conversation-guides`}>Conversation guide</Link><Link className="ghost-button" href={`/parent/${youth.id}/alerts`}>Support alerts</Link></div>
         </div>
       </div>
-      {demoAlerts.filter((alert) => alert.youthUserId === youth.id).map((alert) => (
+      {alerts.map((alert) => (
         <div className="card" style={{ marginTop: 18 }} key={alert.id}>
           <span className="badge warn">{alert.severity}</span>
           <h2>{alert.title}</h2>

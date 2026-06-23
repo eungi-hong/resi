@@ -30,11 +30,12 @@ const starter: ChatMessage = {
   cue: "wave"
 };
 
-export function ChatClient({ user }: { user: DemoUser }) {
-  const [messages, setMessages] = useState<ChatMessage[]>([starter]);
+export function ChatClient({ user, initialMessages = [], initialConversationId }: { user: DemoUser; initialMessages?: ChatMessage[]; initialConversationId?: string }) {
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages.length ? initialMessages : [starter]);
   const [input, setInput] = useState("");
   const [language, setLanguage] = useState<Language>(user.languagePreference);
   const [cue, setCue] = useState<AvatarCue>("wave");
+  const [conversationId, setConversationId] = useState(initialConversationId);
   const logRef = useRef<HTMLDivElement>(null);
   const ageBand = user.ageBand ?? "TEEN_13_15";
   const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
@@ -56,9 +57,10 @@ export function ChatClient({ user }: { user: DemoUser }) {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: clean, language, ageBand })
+      body: JSON.stringify({ message: clean, language, ageBand, youthUserId: user.id, conversationId })
     });
-    const meta = (await res.json()) as AiResponse;
+    const meta = (await res.json()) as AiResponse & { conversationId?: string };
+    if (meta.conversationId) setConversationId(meta.conversationId);
     setCue(meta.avatarCue);
     setMessages((current) => [...current, { sender: "assistant", content: meta.response, cue: meta.avatarCue, meta }]);
   }

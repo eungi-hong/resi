@@ -1,13 +1,13 @@
 import { MetricCard } from "@/components/MetricCard";
 import { PageHeader } from "@/components/PageHeader";
 import YouthShell from "@/components/YouthShell";
-import { initialMetrics } from "@/src/data/demoData";
 import { getCurrentDemoUser } from "@/src/lib/auth/session";
 import { ResiAvatar } from "@/components/avatar/ResiAvatar";
+import { getYouthMetrics } from "@/src/lib/data/dbBacked";
 
 export default async function ProgressPage() {
   const user = await getCurrentDemoUser("YOUTH");
-  const metrics = initialMetrics[user.id] ?? initialMetrics.asha;
+  const metrics = await getYouthMetrics(user.id);
   const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
   return (
     <YouthShell>

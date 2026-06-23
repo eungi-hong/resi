@@ -1,15 +1,10 @@
 import { PageHeader } from "@/components/PageHeader";
 import AdminShell from "@/components/AdminShell";
 import { AdminAnalyticsCharts } from "@/components/AdminAnalyticsCharts";
+import { getAdminAnalyticsData } from "@/src/lib/data/dbBacked";
 
-const rows = [
-  ["Vaping", 64, 51, 43, "Moderate support need rising"],
-  ["Screen time", 71, 58, 52, "Moderate support need stable"],
-  ["Mental health", "Hidden for privacy", "Hidden for privacy", "Hidden for privacy", "Small group hidden"],
-  ["Misinformation", 62, 48, 46, "Moderate support need rising"]
-];
-
-export default function AnalyticsPage() {
+export default async function AnalyticsPage() {
+  const { rows } = await getAdminAnalyticsData();
   return (
     <AdminShell>
       <PageHeader title="Aggregate analytics" kicker="Non-identifying">Small groups are hidden to protect youth privacy. Filters are demo-only in this MVP.</PageHeader>

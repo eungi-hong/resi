@@ -4,12 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
-    "avatar:audit": "node scripts/avatar-audit.mjs"
+    "db:studio": "prisma studio",
+    "db:status": "prisma migrate status",
+    "avatar:audit": "node scripts/avatar-audit.mjs",
+    "deploy:check": "tsx scripts/check-deployment-readiness.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

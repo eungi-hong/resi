@@ -3,14 +3,14 @@ import { Search } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import YouthShell from "@/components/YouthShell";
 import { ResiAvatar } from "@/components/avatar/ResiAvatar";
-import { educationMaterials } from "@/src/data/demoData";
 import { getCurrentDemoUser } from "@/src/lib/auth/session";
+import { getLearningMaterials } from "@/src/lib/data/dbBacked";
 
 export default async function LibraryPage() {
   const user = await getCurrentDemoUser("YOUTH");
   const ageBand = user.ageBand ?? "TEEN_13_15";
   const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
-  const materials = educationMaterials.filter((material) => material.ageBand === ageBand);
+  const materials = await getLearningMaterials(ageBand, user.languagePreference);
   return (
     <YouthShell>
       <section className="avatar-scene">

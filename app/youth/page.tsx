@@ -4,7 +4,7 @@ import { MetricCard } from "@/components/MetricCard";
 import YouthShell from "@/components/YouthShell";
 import { ResiAvatar } from "@/components/avatar/ResiAvatar";
 import { aggregateYouthMetrics } from "@/src/lib/ai/healthLiteracyMetrics";
-import { getRecommendedMaterials, initialMetrics } from "@/src/data/demoData";
+import { getRecommendedLearningMaterials, getYouthMetrics } from "@/src/lib/data/dbBacked";
 import { getCurrentDemoUser } from "@/src/lib/auth/session";
 import type { AvatarCue } from "@/src/lib/types";
 
@@ -18,8 +18,8 @@ export default async function YouthDashboard() {
   const user = await getCurrentDemoUser("YOUTH");
   const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
   const ageBand = user.ageBand ?? "TEEN_13_15";
-  const metrics = aggregateYouthMetrics(initialMetrics[user.id] ?? initialMetrics.asha);
-  const recommended = getRecommendedMaterials(user.id);
+  const metrics = aggregateYouthMetrics(await getYouthMetrics(user.id));
+  const recommended = await getRecommendedLearningMaterials(user.id);
   const ageText = ageBand === "CHILD_10_12" ? "ages 10-12" : ageBand === "TEEN_13_15" ? "ages 13-15" : "older teens 16-18";
   const heroCopy = ageBand === "CHILD_10_12"
     ? "Let us learn one simple health idea and one safe next step."

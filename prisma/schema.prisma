@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -45,6 +46,13 @@ enum SourceStatus {
   OFFICIAL_REVIEWED
 }
 
+enum ReviewStatus {
+  SAMPLE
+  DRAFT
+  NEEDS_REVIEW
+  REVIEWED
+}
+
 enum AlertStatus {
   OPEN
   ACKNOWLEDGED
@@ -52,19 +60,33 @@ enum AlertStatus {
 }
 
 model User {
-  id                 String   @id
+  id                 String            @id
   role               Role
   name               String
-  email              String?  @unique
-  demoUsername       String   @unique
-  languagePreference String   @default("en")
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  email              String?           @unique
+  demoUsername       String            @unique
+  languagePreference String            @default("en")
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  youthProfile       YouthProfile?
+  parentLinks        ParentYouthLink[] @relation("ParentLinks")
+  linkedByParents    ParentYouthLink[] @relation("YouthLinks")
+  conversations      Conversation[]
+  metrics            HealthLiteracyMetric[]
+  riskAssessments    RiskAssessment[]
+  alertsAsYouth      Alert[]           @relation("YouthAlerts")
+  alertsAsParent     Alert[]           @relation("ParentAlerts")
+  parentInsights     ParentInsight[]   @relation("YouthInsights")
+  auditLogs          AuditLog[]
+
+  @@index([role])
+  @@index([demoUsername])
 }
 
 model YouthProfile {
   id                    String   @id
   userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   age                   Int
   ageBand               AgeBand
   preferredName         String
@@ -73,37 +95,55 @@ model YouthProfile {
   parentVisibilityLevel String
   culturalContextNotes  String?
   schoolLevel           String?
+  voiceId               String?
+  interactionStyle      String   @default("calm")
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+
+  @@index([ageBand])
 }
 
 model ParentYouthLink {
-  id             String   @id
-  parentUserId   String
-  youthUserId    String
-  relationship   String
+  id              String   @id
+  parentUserId    String
+  youthUserId     String
+  parent          User     @relation("ParentLinks", fields: [parentUserId], references: [id], onDelete: Cascade)
+  youth           User     @relation("YouthLinks", fields: [youthUserId], references: [id], onDelete: Cascade)
+  relationship    String
   visibilityLevel String
-  createdAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@unique([parentUserId, youthUserId])
+  @@index([parentUserId])
+  @@index([youthUserId])
 }
 
 model Conversation {
-  id          String   @id
+  id          String    @id
   youthUserId String
+  youth       User      @relation(fields: [youthUserId], references: [id], onDelete: Cascade)
   title       String
   language    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  messages    Message[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([youthUserId, updatedAt])
 }
 
 model Message {
-  id             String   @id
+  id             String       @id
   conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         Sender
   content        String
   language       String
   safetyLabels   Json
   avatarCue      String?
-  createdAt      DateTime @default(now())
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
 }
 
 model HealthContext {
@@ -115,22 +155,31 @@ model HealthContext {
   knownConcerns        Json
   confidence           Float
   lastUpdatedAt        DateTime
+
+  @@unique([youthUserId, topic])
+  @@index([youthUserId])
 }
 
 model HealthLiteracyMetric {
-  id          String   @id
+  id          String            @id
   youthUserId String
+  youth       User              @relation(fields: [youthUserId], references: [id], onDelete: Cascade)
   topic       String
   dimension   LiteracyDimension
   score       Int
   confidence  Float
   evidence    Json
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([youthUserId, topic, dimension])
+  @@index([youthUserId, topic, dimension])
 }
 
 model RiskAssessment {
   id                     String   @id
   youthUserId            String
+  youth                  User     @relation(fields: [youthUserId], references: [id], onDelete: Cascade)
   topic                  String
   riskType               String
   severity               Severity
@@ -140,12 +189,17 @@ model RiskAssessment {
   recommendedAction      String
   parentAlertRecommended Boolean
   createdAt              DateTime @default(now())
+
+  @@index([youthUserId, severity, createdAt])
+  @@index([topic, severity, createdAt])
 }
 
 model Alert {
   id                 String      @id
   youthUserId        String
   parentUserId       String?
+  youth              User        @relation("YouthAlerts", fields: [youthUserId], references: [id], onDelete: Cascade)
+  parent             User?       @relation("ParentAlerts", fields: [parentUserId], references: [id], onDelete: SetNull)
   type               String
   severity           Severity
   title              String
@@ -154,6 +208,25 @@ model Alert {
   status             AlertStatus @default(OPEN)
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
+
+  @@index([youthUserId, status, severity])
+  @@index([parentUserId, status])
+}
+
+model ParentInsight {
+  id                      String   @id
+  youthUserId             String
+  youth                   User     @relation("YouthInsights", fields: [youthUserId], references: [id], onDelete: Cascade)
+  summary                 String
+  literacyStrengths       Json
+  growthAreas             Json
+  suggestedParentApproach String
+  conversationStarters    Json
+  riskLevel               Severity
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([youthUserId, updatedAt])
 }
 
 model EducationMaterial {
@@ -168,10 +241,40 @@ model EducationMaterial {
   literacyDimension LiteracyDimension
   sourceUrl         String?
   sourceStatus      SourceStatus
+  reviewStatus      ReviewStatus      @default(SAMPLE)
   reviewedBy        String?
   lastReviewedAt    DateTime?
+  localContextNote  String?
+  estimatedMinutes  Int?
+  difficulty        String?
+  goalLabel         String?
+  progress          Int               @default(0)
+  whatYouLearn      Json?
+  quickExplainer    String?
+  scenario          String?
+  practiceActivity  Json?
+  mythCheck         Json?
+  trustedAdultScript String?
+  avatarCue         String?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+  learningModules   LearningModule[]
+
+  @@index([topic, ageBand, language, sourceStatus])
+  @@index([reviewStatus])
+}
+
+model LearningModule {
+  id                  String            @id
+  educationMaterialId String
+  material            EducationMaterial @relation(fields: [educationMaterialId], references: [id], onDelete: Cascade)
+  title               String
+  sections            Json
+  orderIndex          Int               @default(0)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([educationMaterialId])
 }
 
 model Quiz {
@@ -182,16 +285,23 @@ model Quiz {
   title             String
   literacyDimension LiteracyDimension
   questions         Json
+  attempts          QuizAttempt[]
+
+  @@index([topic, ageBand, language])
 }
 
 model QuizAttempt {
   id              String   @id
   youthUserId     String
   quizId          String
+  quiz            Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
   score           Int
   answers         Json
   literacyUpdates Json
   createdAt       DateTime @default(now())
+
+  @@index([youthUserId, createdAt])
+  @@index([quizId])
 }
 
 model GamificationState {
@@ -215,29 +325,39 @@ model AdminAggregateSnapshot {
   averageCriticalScore     Float
   riskCounts               Json
   materialEngagement       Json
+
+  @@index([date, topic, ageBand, language])
 }
 
 model AvatarAsset {
-  id                 String   @id
-  characterName      String
-  displayName        String
-  genderPresentation String
-  agePresentation    String
-  pose               String
-  emotion            String
-  action             String
-  filePath           String
-  altText            String
+  id                  String   @id
+  characterName       String
+  displayName         String
+  genderPresentation  String
+  agePresentation     String
+  pose                String
+  emotion             String
+  action              String
+  filePath            String
+  expectedPath        String?
+  altText             String
   recommendedContexts Json
-  createdAt          DateTime @default(now())
+  missing             Boolean  @default(false)
+  createdAt           DateTime @default(now())
+
+  @@index([characterName, pose])
 }
 
 model AuditLog {
   id          String   @id
   actorUserId String
+  actor       User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
   action      String
   entityType  String
   entityId    String
   metadata    Json
   createdAt   DateTime @default(now())
+
+  @@index([actorUserId, createdAt])
+  @@index([entityType, entityId])
 }

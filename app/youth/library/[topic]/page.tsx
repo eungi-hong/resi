@@ -2,8 +2,8 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import YouthShell from "@/components/YouthShell";
 import { ResiAvatar } from "@/components/avatar/ResiAvatar";
-import { educationMaterials } from "@/src/data/demoData";
 import { getCurrentDemoUser } from "@/src/lib/auth/session";
+import { getTopicMaterial } from "@/src/lib/data/dbBacked";
 import type { AgeBand } from "@/src/lib/types";
 
 export default async function TopicPage({ params, searchParams }: { params: Promise<{ topic: string }>; searchParams?: Promise<{ ageBand?: AgeBand }> }) {
@@ -12,7 +12,7 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
   const user = await getCurrentDemoUser("YOUTH");
   const ageBand = query?.ageBand ?? user.ageBand ?? "TEEN_13_15";
   const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
-  const material = educationMaterials.find((item) => item.topic === topic && item.ageBand === ageBand) ?? educationMaterials.find((item) => item.topic === topic)!;
+  const material = await getTopicMaterial(topic, ageBand, user.languagePreference);
   return (
     <YouthShell>
       <section className="avatar-scene">

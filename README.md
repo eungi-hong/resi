@@ -16,6 +16,7 @@ resi is a youth health literacy AI associate for TheFirst Spark challenge hackat
 
 ```bash
 npm install
+npm run db:generate
 npm run dev
 ```
 
@@ -35,8 +36,47 @@ Copy `.env.example` to `.env.local` and add keys only if enabling live providers
 Key defaults:
 
 - `RESI_AI_PROVIDER=mock`
-- `DATABASE_URL=file:./dev.db`
+- `AI_PROVIDER=mock`
+- `DATABASE_URL` must point to hosted Postgres for Mode B deployment
 - `ELEVENLABS_API_KEY` blank disables ElevenLabs voice.
+
+## Mode B: Hosted Postgres Deployment
+
+The public hackathon deployment path is Mode B: hosted Postgres with Prisma. The app still supports mock AI and text-only voice fallback, but production demo data should be persisted in Postgres.
+
+Recommended providers:
+
+- Supabase Postgres
+- Neon Postgres
+- Vercel Postgres
+- Any managed Postgres compatible with Prisma
+
+Required Vercel environment variables:
+
+- `DATABASE_URL`
+- `DIRECT_URL` when the provider requires a direct migration connection
+- `NEXT_PUBLIC_DEMO_MODE=true`
+- `NEXT_PUBLIC_SHOW_DEMO_ROLE_SWITCHER=true`
+- `AI_PROVIDER=mock`
+- `NEXT_PUBLIC_ENABLE_MOCK_AI=true`
+- `DEMO_SEED_SECRET`
+- optional `OPENAI_API_KEY`
+- optional `ELEVENLABS_API_KEY`
+
+Deployment commands:
+
+```bash
+npm run db:migrate:deploy
+npm run db:seed
+npm run deploy:check
+```
+
+Health checks:
+
+- `/api/health`
+- `/api/health/db`
+
+See [Mode B deployment docs](docs/deployment-mode-b.md), [live demo checklist](docs/live-demo-checklist.md), and [hackathon submission notes](docs/hackathon-submission.md).
 
 ## Demo Accounts
 
@@ -64,6 +104,7 @@ Direct demo routes:
 - Youth: `/youth`
 - Parent: `/parent`
 - Admin: `/admin`
+- Demo: `/demo`
 - Personalization demo: `/demo/personalization`
 
 ## Features

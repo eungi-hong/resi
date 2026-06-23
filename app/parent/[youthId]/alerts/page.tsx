@@ -1,10 +1,10 @@
 import { PageHeader } from "@/components/PageHeader";
 import ParentShell from "@/components/ParentShell";
-import { demoAlerts } from "@/src/data/demoData";
+import { getYouthAlerts } from "@/src/lib/data/dbBacked";
 
 export default async function AlertsPage({ params }: { params: Promise<{ youthId: string }> }) {
   const { youthId } = await params;
-  const alerts = demoAlerts.filter((alert) => alert.youthUserId === youthId);
+  const alerts = await getYouthAlerts(youthId);
   return (
     <ParentShell>
       <PageHeader title="Support alerts" kicker="Supportive response">Alerts summarize why support may help without exposing private transcripts.</PageHeader>

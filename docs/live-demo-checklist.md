@@ -1,0 +1,22 @@
+# Live Demo Checklist
+
+- Hosted Postgres database created.
+- `DATABASE_URL` and `DIRECT_URL` set in Vercel.
+- `npm run db:migrate:deploy` completed.
+- `npm run db:seed` completed.
+- `/api/health` passes.
+- `/api/health/db` passes.
+- Public demo URL loads.
+- `/youth` loads directly.
+- `/youth/chat` loads directly.
+- Chat input is visible without page scrolling.
+- Send “Is vaping actually that bad if everyone does it?”
+- Refresh `/youth/chat` and confirm messages remain.
+- `/youth/library` shows DB learning modules.
+- Quiz attempt persists and progress updates.
+- `/parent` loads directly.
+- `/parent/asha` shows parent insight and support alert.
+- `/admin` loads directly.
+- `/admin/analytics` shows DB-backed aggregates or privacy-hidden segments.
+- `/admin/content` reads education materials from the DB.
+- Backup screenshots or video recorded.

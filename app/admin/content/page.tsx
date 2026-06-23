@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import AdminShell from "@/components/AdminShell";
-import { educationMaterials } from "@/src/data/demoData";
+import { getLearningMaterials } from "@/src/lib/data/dbBacked";
 
 const labelFor = {
   FUNCTIONAL: "Understanding",
@@ -9,7 +9,8 @@ const labelFor = {
   CRITICAL: "Evaluating misinformation"
 } as const;
 
-export default function ContentPage() {
+export default async function ContentPage() {
+  const educationMaterials = await getLearningMaterials();
   return (
     <AdminShell>
       <PageHeader title="Education content library" kicker="Human review required">Manage age-specific, multilingual health literacy materials.</PageHeader>
