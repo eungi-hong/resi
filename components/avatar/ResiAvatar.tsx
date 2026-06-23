@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { resolveAvatarAsset, type AvatarCharacter } from "@/src/data/avatarManifest";
 import type { AvatarCue } from "@/src/lib/types";
 import { AvatarAssetMissingNotice } from "@/components/avatar/AvatarAssetMissingNotice";

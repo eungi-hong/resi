@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { BookOpen, MessageCircle, MessagesSquare, TimerReset } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
-import { PageHeader } from "@/components/PageHeader";
 import YouthShell from "@/components/YouthShell";
 import { ResiAvatar } from "@/components/avatar/ResiAvatar";
 import { aggregateYouthMetrics } from "@/src/lib/ai/healthLiteracyMetrics";
 import { getRecommendedMaterials, initialMetrics } from "@/src/data/demoData";
 import { getCurrentDemoUser } from "@/src/lib/auth/session";
+import type { AvatarCue } from "@/src/lib/types";
 
 const youthLabels = {
   FUNCTIONAL: "Understand",
@@ -49,11 +49,11 @@ export default async function YouthDashboard() {
         <Link href="/youth/library">View all modules</Link>
       </div>
       <div className="grid grid-3">
-        {[
+        {([
           ["Vaping", "Handling peer pressure", "Practise a refusal script", "thinking"],
           ["Screen time", "Sleep reset", "Build a boundary you control", "resource"],
           ["Mental health", "Checking online claims", "Separate labels from diagnosis", "listening"]
-        ].map(([topic, title, summary, cue]) => (
+        ] as [string, string, string, AvatarCue][]).map(([topic, title, summary, cue]) => (
           <Link className="card topic-card" href="/youth/library" key={topic}>
             <div>
               <span className="badge">{topic}</span>
@@ -61,7 +61,7 @@ export default async function YouthDashboard() {
               <p className="muted">{summary}</p>
               <div className="bar"><span style={{ width: topic === "Vaping" ? "48%" : "32%" }} /></div>
             </div>
-            <ResiAvatar character={character} cue={cue as any} size="sm" showMissingNotice={false} />
+            <ResiAvatar character={character} cue={cue} size="sm" showMissingNotice={false} />
           </Link>
         ))}
       </div>

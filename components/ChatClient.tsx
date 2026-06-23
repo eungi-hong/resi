@@ -71,7 +71,7 @@ export function ChatClient({ user }: { user: DemoUser }) {
         <ResiAvatar character={character} cue={cue} size="lg" />
         <div>
           <span className="badge">Personalized for {ageBand === "CHILD_10_12" ? "ages 10-12" : ageBand === "TEEN_13_15" ? "ages 13-15" : "older teens"}</span>
-          <h2>{user.name}'s resi space</h2>
+          <h2>{user.name}&apos;s resi space</h2>
           <p className="muted">Language: {language.toUpperCase()} · Learning level: {ageBand === "CHILD_10_12" ? "simple guidance" : ageBand === "TEEN_13_15" ? "scenario practice" : "decision support"}</p>
         </div>
         <div className="grid">
