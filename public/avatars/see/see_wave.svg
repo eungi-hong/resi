@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" role="img" aria-label="See, a friendly resi avatar">
+  <rect width="360" height="360" rx="48" fill="#e9f6f0"/>
+  <circle cx="180" cy="150" r="84" fill="#48b87f"/>
+  <path d="M113 122c35-47 108-47 134 1 2-50-136-64-134-1z" fill="#15332a"/>
+  <circle cx="151" cy="146" r="10" fill="#fff"/>
+  <circle cx="211" cy="146" r="10" fill="#fff"/>
+  <path d="M146 187c24 22 49 22 73 0" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+  <path d="M77 311c31-76 175-76 206 0" fill="#3f7cac"/>
+  <path d="M270 93l33-24" stroke="#f2b84b" stroke-width="16" stroke-linecap="round"/>
+  <text x="180" y="334" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#15332a">See</text>
+</svg>

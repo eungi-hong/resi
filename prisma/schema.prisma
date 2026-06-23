@@ -1,0 +1,243 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  YOUTH
+  PARENT
+  ADMIN
+}
+
+enum AgeBand {
+  CHILD_10_12
+  TEEN_13_15
+  OLDER_TEEN_16_18
+}
+
+enum Sender {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum LiteracyDimension {
+  FUNCTIONAL
+  INTERACTIVE
+  CRITICAL
+}
+
+enum Severity {
+  NONE
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+enum SourceStatus {
+  SAMPLE
+  UNVERIFIED
+  OFFICIAL_REVIEWED
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model User {
+  id                 String   @id
+  role               Role
+  name               String
+  email              String?  @unique
+  demoUsername       String   @unique
+  languagePreference String   @default("en")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model YouthProfile {
+  id                    String   @id
+  userId                String   @unique
+  age                   Int
+  ageBand               AgeBand
+  preferredName         String
+  avatarId              String
+  consentStatus         String
+  parentVisibilityLevel String
+  culturalContextNotes  String?
+  schoolLevel           String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model ParentYouthLink {
+  id             String   @id
+  parentUserId   String
+  youthUserId    String
+  relationship   String
+  visibilityLevel String
+  createdAt      DateTime @default(now())
+}
+
+model Conversation {
+  id          String   @id
+  youthUserId String
+  title       String
+  language    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Message {
+  id             String   @id
+  conversationId String
+  sender         Sender
+  content        String
+  language       String
+  safetyLabels   Json
+  avatarCue      String?
+  createdAt      DateTime @default(now())
+}
+
+model HealthContext {
+  id                   String   @id
+  youthUserId          String
+  topic                String
+  summary              String
+  socioculturalFactors Json
+  knownConcerns        Json
+  confidence           Float
+  lastUpdatedAt        DateTime
+}
+
+model HealthLiteracyMetric {
+  id          String   @id
+  youthUserId String
+  topic       String
+  dimension   LiteracyDimension
+  score       Int
+  confidence  Float
+  evidence    Json
+  updatedAt   DateTime @updatedAt
+}
+
+model RiskAssessment {
+  id                     String   @id
+  youthUserId            String
+  topic                  String
+  riskType               String
+  severity               Severity
+  score                  Int
+  rationale              String
+  evidenceMessageIds     Json
+  recommendedAction      String
+  parentAlertRecommended Boolean
+  createdAt              DateTime @default(now())
+}
+
+model Alert {
+  id                 String      @id
+  youthUserId        String
+  parentUserId       String?
+  type               String
+  severity           Severity
+  title              String
+  summary            String
+  recommendedActions Json
+  status             AlertStatus @default(OPEN)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+model EducationMaterial {
+  id                String            @id
+  topic             String
+  title             String
+  summary           String
+  content           String
+  ageBand           AgeBand
+  language          String
+  readingLevel      String
+  literacyDimension LiteracyDimension
+  sourceUrl         String?
+  sourceStatus      SourceStatus
+  reviewedBy        String?
+  lastReviewedAt    DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Quiz {
+  id                String            @id
+  topic             String
+  ageBand           AgeBand
+  language          String
+  title             String
+  literacyDimension LiteracyDimension
+  questions         Json
+}
+
+model QuizAttempt {
+  id              String   @id
+  youthUserId     String
+  quizId          String
+  score           Int
+  answers         Json
+  literacyUpdates Json
+  createdAt       DateTime @default(now())
+}
+
+model GamificationState {
+  id              String   @id
+  youthUserId     String   @unique
+  points          Int
+  streakDays      Int
+  badges          Json
+  completedQuests Json
+  updatedAt       DateTime @updatedAt
+}
+
+model AdminAggregateSnapshot {
+  id                       String   @id
+  date                     DateTime
+  ageBand                  AgeBand
+  language                 String
+  topic                    String
+  averageFunctionalScore   Float
+  averageInteractiveScore  Float
+  averageCriticalScore     Float
+  riskCounts               Json
+  materialEngagement       Json
+}
+
+model AvatarAsset {
+  id                 String   @id
+  characterName      String
+  displayName        String
+  genderPresentation String
+  agePresentation    String
+  pose               String
+  emotion            String
+  action             String
+  filePath           String
+  altText            String
+  recommendedContexts Json
+  createdAt          DateTime @default(now())
+}
+
+model AuditLog {
+  id          String   @id
+  actorUserId String
+  action      String
+  entityType  String
+  entityId    String
+  metadata    Json
+  createdAt   DateTime @default(now())
+}
