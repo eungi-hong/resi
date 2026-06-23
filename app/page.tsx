@@ -19,7 +19,7 @@ export default function HomePage() {
           <div className="grid grid-3">
             <div className="card"><MessageCircle /> <h3>Youth chat</h3><p className="muted">Mock AI with recommendations, quizzes, safety cues, and avatar reactions.</p></div>
             <div className="card"><ShieldCheck /> <h3>Privacy first</h3><p className="muted">Parents see supportive summaries and safety alerts, not private transcripts by default.</p></div>
-            <div className="card"><BarChart3 /> <h3>Population insight</h3><p className="muted">Admins view aggregate literacy and vulnerability trends with small-group suppression.</p></div>
+            <div className="card"><BarChart3 /> <h3>Population insight</h3><p className="muted">Admins view aggregate literacy and support-need trends with small-group suppression.</p></div>
           </div>
         </div>
         <div className="avatar-stage">

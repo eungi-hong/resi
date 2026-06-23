@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "avatar:audit": "node scripts/avatar-audit.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

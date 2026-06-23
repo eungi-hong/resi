@@ -1,10 +1,14 @@
 import type { AvatarCue } from "@/src/lib/types";
 
+export type AvatarCharacter = "Ree" | "See" | "Custom";
+
 export type AvatarAsset = {
   id: string;
-  characterName: "Ree" | "See" | "Custom";
+  characterName: AvatarCharacter;
   displayName: string;
   filePath: string;
+  fallbackPath: string;
+  expectedPath: string;
   pose: string;
   emotion: string;
   action: string;
@@ -13,44 +17,117 @@ export type AvatarAsset = {
   avatarCue: AvatarCue;
   recommendedContexts: string[];
   altText: string;
+  missing: boolean;
+  suggestedFilename?: string;
 };
 
-const cues: AvatarCue[] = ["idle", "wave", "thinking", "explaining", "celebrate", "concerned", "resource", "quiz"];
+export const requiredAvatarCues: AvatarCue[] = [
+  "idle",
+  "wave",
+  "thinking",
+  "explaining",
+  "pointing",
+  "reading",
+  "quiz",
+  "celebrate",
+  "concerned",
+  "listening",
+  "writing",
+  "resource",
+  "safe_escalation"
+];
+
+const presentRaster = new Set([
+  "ree_explaining",
+  "ree_reading",
+  "ree_thinking",
+  "ree_waving",
+  "ree_welcoming",
+  "see_explaining",
+  "see_thinking",
+  "see_waving",
+  "see_welcoming",
+  "see_writing"
+]);
+
+const svgFallback = new Set([
+  "ree_idle",
+  "ree_wave",
+  "ree_thinking",
+  "ree_explaining",
+  "ree_quiz",
+  "ree_celebrate",
+  "ree_concerned",
+  "ree_resource",
+  "see_idle",
+  "see_wave",
+  "see_thinking",
+  "see_explaining",
+  "see_quiz",
+  "see_celebrate",
+  "see_concerned",
+  "see_resource"
+]);
+
+const cueAliases: Partial<Record<AvatarCue, string>> = {
+  wave: "waving",
+  parent_guidance: "waving",
+  dashboard_pointer: "explaining"
+};
+
+function emotionFor(cue: AvatarCue) {
+  if (cue === "concerned" || cue === "safe_escalation") return "gentle concern";
+  if (cue === "celebrate") return "proud";
+  if (cue === "quiz") return "encouraging";
+  if (cue === "listening") return "attentive";
+  return "friendly";
+}
+
+function buildAsset(characterName: "Ree" | "See", cue: AvatarCue): AvatarAsset {
+  const character = characterName.toLowerCase();
+  const expectedKey = `${character}_${cue}`;
+  const aliasKey = `${character}_${cueAliases[cue] ?? cue}`;
+  const expectedPath = `/avatars/${character}/${expectedKey}.png`;
+  const hasExpectedRaster = presentRaster.has(expectedKey);
+  const hasAliasRaster = presentRaster.has(aliasKey);
+  const hasSvg = svgFallback.has(expectedKey);
+  const filePath = hasExpectedRaster
+    ? expectedPath
+    : hasAliasRaster
+      ? `/avatars/${character}/${aliasKey}.png`
+      : hasSvg
+        ? `/avatars/${character}/${expectedKey}.svg`
+        : "/avatars/fallback/avatar_placeholder.svg";
+
+  return {
+    id: `${character}_${cue}`,
+    characterName,
+    displayName: characterName,
+    filePath,
+    fallbackPath: filePath,
+    expectedPath,
+    pose: cue,
+    emotion: emotionFor(cue),
+    action: cue,
+    genderPresentation: characterName === "Ree" ? "masculine_or_neutral" : "feminine_or_neutral",
+    agePresentation: "youthful",
+    avatarCue: cue,
+    recommendedContexts: cue === "wave" ? ["onboarding", "greeting"] : ["chat", "learning", "dashboard"],
+    altText: `${characterName}, a friendly resi avatar, ${cue.replace("_", " ")}`,
+    missing: !hasExpectedRaster,
+    suggestedFilename: `${character}_${cue}.png`
+  };
+}
 
 export const avatarManifest: AvatarAsset[] = [
-  ...cues.map((cue) => ({
-    id: `ree_${cue}`,
-    characterName: "Ree" as const,
-    displayName: "Ree",
-    filePath: `/avatars/ree/ree_${cue}.svg`,
-    pose: cue,
-    emotion: cue === "concerned" ? "gentle concern" : cue === "celebrate" ? "proud" : "friendly",
-    action: cue,
-    genderPresentation: "masculine_or_neutral",
-    agePresentation: "youthful",
-    avatarCue: cue,
-    recommendedContexts: cue === "wave" ? ["onboarding", "greeting"] : ["chat", "learning"],
-    altText: `Ree, a friendly resi avatar, ${cue.replace("_", " ")}`
-  })),
-  ...cues.map((cue) => ({
-    id: `see_${cue}`,
-    characterName: "See" as const,
-    displayName: "See",
-    filePath: `/avatars/see/see_${cue}.svg`,
-    pose: cue,
-    emotion: cue === "concerned" ? "gentle concern" : cue === "celebrate" ? "proud" : "curious",
-    action: cue,
-    genderPresentation: "feminine_or_neutral",
-    agePresentation: "youthful",
-    avatarCue: cue,
-    recommendedContexts: cue === "quiz" ? ["quiz", "teach-back"] : ["chat", "learning"],
-    altText: `See, a friendly resi avatar, ${cue.replace("_", " ")}`
-  })),
+  ...requiredAvatarCues.flatMap((cue) => [buildAsset("Ree", cue), buildAsset("See", cue)]),
   {
     id: "avatar_placeholder",
     characterName: "Custom",
     displayName: "resi avatar",
     filePath: "/avatars/fallback/avatar_placeholder.svg",
+    fallbackPath: "/avatars/fallback/avatar_placeholder.svg",
+    expectedPath: "/avatars/fallback/avatar_placeholder.png",
     pose: "idle",
     emotion: "friendly",
     action: "fallback",
@@ -58,7 +135,8 @@ export const avatarManifest: AvatarAsset[] = [
     agePresentation: "youthful",
     avatarCue: "idle",
     recommendedContexts: ["fallback"],
-    altText: "A friendly resi avatar placeholder"
+    altText: "A friendly resi avatar placeholder",
+    missing: false
   }
 ];
 
@@ -69,4 +147,8 @@ export function resolveAvatarAsset(character: "Ree" | "See", cue: AvatarCue): Av
     avatarManifest.find((asset) => asset.avatarCue === cue) ??
     avatarManifest.find((asset) => asset.id === "avatar_placeholder")!
   );
+}
+
+export function getMissingAvatarAssets() {
+  return avatarManifest.filter((asset) => asset.characterName !== "Custom" && asset.missing);
 }

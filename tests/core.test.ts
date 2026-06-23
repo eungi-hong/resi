@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveAvatarAsset } from "../src/data/avatarManifest";
+import { getMissingAvatarAssets, resolveAvatarAsset } from "../src/data/avatarManifest";
 import { getMaterialsFor } from "../src/data/demoData";
 import { calculateLiteracyUpdate } from "../src/lib/ai/healthLiteracyMetrics";
 import { mockGenerateYouthResponse } from "../src/lib/ai/mockProvider";
@@ -54,7 +54,14 @@ describe("resi core safety and metrics", () => {
 
   it("falls back avatar selection", () => {
     const asset = resolveAvatarAsset("Ree", "safe_escalation");
-    expect(asset.id).toBe("ree_idle");
+    expect(asset.id).toBe("ree_safe_escalation");
+    expect(asset.missing).toBe(true);
+  });
+
+  it("reports missing required avatar assets for demo follow-up", () => {
+    const missing = getMissingAvatarAssets();
+    expect(missing.length).toBeGreaterThan(0);
+    expect(missing.some((asset) => asset.expectedPath.includes("ree_safe_escalation.png"))).toBe(true);
   });
 
   it("enforces demo access-control helpers", () => {
@@ -74,5 +81,13 @@ describe("resi core safety and metrics", () => {
     expect(materials.length).toBeGreaterThan(0);
     expect(materials.every((material) => material.ageBand === "TEEN_13_15")).toBe(true);
     expect(materials.every((material) => material.topic === "vaping")).toBe(true);
+    expect(materials[0].quickExplainer).toContain("Vaping");
+  });
+
+  it("changes mock response style by age band", () => {
+    const child = mockGenerateYouthResponse("Is vaping bad?", { ageBand: "CHILD_10_12" });
+    const older = mockGenerateYouthResponse("Is vaping bad?", { ageBand: "OLDER_TEEN_16_18" });
+    expect(child.response).toContain("simple");
+    expect(older.suggestedQuickReplies).toContain("Give me a decision aid");
   });
 });

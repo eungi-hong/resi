@@ -8,6 +8,10 @@ const protectedPortals = [
 ] as const;
 
 export function middleware(request: NextRequest) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE !== "false") {
+    return NextResponse.next();
+  }
+
   const portal = protectedPortals.find((item) => request.nextUrl.pathname.startsWith(item.prefix));
   if (!portal) return NextResponse.next();
 

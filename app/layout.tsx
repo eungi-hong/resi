@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HeartPulse } from "lucide-react";
+import { DemoRoleSwitcher } from "@/components/DemoRoleSwitcher";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,8 +24,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/youth">Youth</Link>
                 <Link href="/parent">Parent</Link>
                 <Link href="/admin">Admin</Link>
+                <Link href="/demo/personalization">Demo</Link>
                 <Link href="/login">Login</Link>
               </nav>
+              <DemoRoleSwitcher />
             </div>
           </header>
           {children}

@@ -7,7 +7,7 @@ export default async function AlertsPage({ params }: { params: Promise<{ youthId
   const alerts = demoAlerts.filter((alert) => alert.youthUserId === youthId);
   return (
     <ParentShell>
-      <PageHeader title="Risk alerts" kicker="Supportive response">Alerts summarize why support may help without exposing private transcripts.</PageHeader>
+      <PageHeader title="Support alerts" kicker="Supportive response">Alerts summarize why support may help without exposing private transcripts.</PageHeader>
       <div className="grid">
         {alerts.map((alert) => (
           <div className="card" key={alert.id}>

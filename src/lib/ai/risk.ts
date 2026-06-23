@@ -39,7 +39,7 @@ export function classifyRisk(message: string): { severity: Severity; riskTypes: 
       severity: "MODERATE",
       riskTypes: [/vap(e|ing)/.test(text) ? "vaping" : text.includes("tiktok") ? "misinformation" : "health_concern"],
       parentAlertRecommended: false,
-      rationale: "Message includes a youth health vulnerability topic that benefits from supportive monitoring."
+      rationale: "Message includes a youth health topic that may benefit from supportive monitoring."
     };
   }
   return { severity: "LOW", riskTypes: ["general_learning"], parentAlertRecommended: false, rationale: "General educational query." };

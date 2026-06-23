@@ -1,29 +1,52 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Send, Volume2 } from "lucide-react";
-import { Avatar } from "@/components/Avatar";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { BookOpen, MessageSquare, Send, ShieldCheck, Sparkles, Volume2 } from "lucide-react";
+import { ResiAvatar } from "@/components/avatar/ResiAvatar";
 import { educationMaterials } from "@/src/data/demoData";
-import type { AiResponse, AvatarCue } from "@/src/lib/types";
+import type { AgeBand, AiResponse, AvatarCue, DemoUser, Language } from "@/src/lib/types";
 import { speakWithBrowser } from "@/src/lib/voice/mockVoice";
 
-type ChatMessage = { sender: "user" | "assistant"; content: string; meta?: AiResponse };
+type ChatMessage = { sender: "user" | "assistant"; content: string; cue?: AvatarCue; meta?: AiResponse };
+
+const demoPrompts = [
+  "Is vaping actually that bad if everyone does it?",
+  "I can't sleep because I scroll for hours.",
+  "TikTok says I might have anxiety. Is that true?",
+  "My parents say diabetes matters but I'm young. Does it?",
+  "Help me tell my mum I'm stressed.",
+  "You're the only one who understands me."
+];
+
+const quickRepliesByAge: Record<AgeBand, string[]> = {
+  CHILD_10_12: ["Explain with an example", "Help me ask an adult", "Quiz me gently", "Show one safe next step"],
+  TEEN_13_15: ["Explain simply", "Quiz me", "Help me talk to an adult", "What should I do next?"],
+  OLDER_TEEN_16_18: ["Give me a decision aid", "Check the claim", "Help me plan the conversation", "Go deeper"]
+};
 
 const starter: ChatMessage = {
   sender: "assistant",
-  content: "Hi, I am resi. Ask me about vaping, stress, sleep, screen time, food, exercise, or how to talk to a trusted adult."
+  content: "Hi, I am resi. Ask me about vaping, stress, sleep, screen time, food, exercise, or how to talk to a trusted adult.",
+  cue: "wave"
 };
 
-export function ChatClient() {
+export function ChatClient({ user }: { user: DemoUser }) {
   const [messages, setMessages] = useState<ChatMessage[]>([starter]);
   const [input, setInput] = useState("");
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState<Language>(user.languagePreference);
   const [cue, setCue] = useState<AvatarCue>("wave");
+  const logRef = useRef<HTMLDivElement>(null);
+  const ageBand = user.ageBand ?? "TEEN_13_15";
+  const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
   const lastMeta = [...messages].reverse().find((message) => message.meta)?.meta;
   const recommendations = useMemo(
     () => educationMaterials.filter((material) => lastMeta?.recommendedMaterialIds.includes(material.id)),
     [lastMeta]
   );
+
+  useEffect(() => {
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
 
   async function sendMessage(text = input) {
     const clean = text.trim();
@@ -33,63 +56,114 @@ export function ChatClient() {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: clean, language })
+      body: JSON.stringify({ message: clean, language, ageBand })
     });
     const meta = (await res.json()) as AiResponse;
     setCue(meta.avatarCue);
-    setMessages((current) => [...current, { sender: "assistant", content: meta.response, meta }]);
+    setMessages((current) => [...current, { sender: "assistant", content: meta.response, cue: meta.avatarCue, meta }]);
   }
+
+  const quickReplies = lastMeta?.suggestedQuickReplies?.length ? lastMeta.suggestedQuickReplies : quickRepliesByAge[ageBand];
 
   return (
     <div className="chat-shell">
-      <section>
-        <div className="chat-log" aria-live="polite">
-          {messages.map((message, index) => (
-            <div className={`message ${message.sender}`} key={`${message.sender}-${index}`}>{message.content}</div>
+      <aside className="chat-side-panel">
+        <ResiAvatar character={character} cue={cue} size="lg" />
+        <div>
+          <span className="badge">Personalized for {ageBand === "CHILD_10_12" ? "ages 10-12" : ageBand === "TEEN_13_15" ? "ages 13-15" : "older teens"}</span>
+          <h2>{user.name}'s resi space</h2>
+          <p className="muted">Language: {language.toUpperCase()} · Learning level: {ageBand === "CHILD_10_12" ? "simple guidance" : ageBand === "TEEN_13_15" ? "scenario practice" : "decision support"}</p>
+        </div>
+        <div className="grid">
+          {[
+            ["Quiz me", BookOpen],
+            ["Explain simply", Sparkles],
+            ["Help me talk to an adult", MessageSquare],
+            ["Show resources", ShieldCheck]
+          ].map(([label, Icon]) => (
+            <button className="ghost-button" key={String(label)} onClick={() => sendMessage(String(label))}>
+              <Icon size={17} /> {String(label)}
+            </button>
           ))}
         </div>
-        <div className="chip-row" style={{ marginTop: 12 }}>
-          {(lastMeta?.suggestedQuickReplies ?? ["Is vaping actually that bad if everyone does it?", "I think I have anxiety because TikTok says these symptoms mean anxiety.", "I can't sleep because I scroll for hours.", "You're the only one who understands me."]).map((prompt) => (
-            <button className="chip" key={prompt} onClick={() => sendMessage(prompt)}>{prompt}</button>
-          ))}
+        <div className="card subtle">
+          <strong>Recommended next module</strong>
+          <p className="muted">{recommendations[0]?.title ?? "Vaping and peer pressure: Explorer"}</p>
         </div>
-        <form
-          className="chat-input"
-          onSubmit={(event) => {
-            event.preventDefault();
-            sendMessage();
-          }}
-        >
-          <input className="input" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask resi a health question..." />
-          <button className="button" type="submit"><Send size={18} /> Send</button>
-        </form>
+      </aside>
+
+      <section className="chat-panel" aria-label="resi chat">
+        <header className="chat-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <ResiAvatar character={character} cue={cue} size="sm" showMissingNotice={false} />
+            <div>
+              <strong>resi is listening</strong>
+              <p className="muted" style={{ margin: 0 }}>Educational support, not diagnosis or emergency care</p>
+            </div>
+          </div>
+          <select className="select" style={{ maxWidth: 180 }} value={language} onChange={(event) => setLanguage(event.target.value as Language)} aria-label="Chat language">
+            <option value="en">English</option>
+            <option value="zh">Mandarin</option>
+            <option value="ms">Malay</option>
+            <option value="ta">Tamil</option>
+          </select>
+        </header>
+
+        <div className="chat-log" ref={logRef} aria-live="polite">
+          {messages.map((message, index) =>
+            message.sender === "assistant" ? (
+              <div className="assistant-row" key={`${message.sender}-${index}`}>
+                <ResiAvatar character={character} cue={message.cue ?? "explaining"} size="sm" showMissingNotice={false} />
+                <div className="message assistant">{message.content}</div>
+              </div>
+            ) : (
+              <div className="message user" key={`${message.sender}-${index}`}>{message.content}</div>
+            )
+          )}
+        </div>
+
+        <div className="chat-composer">
+          <div className="chip-row">
+            {quickReplies.map((prompt) => (
+              <button className="chip" key={prompt} type="button" onClick={() => sendMessage(prompt)}>{prompt}</button>
+            ))}
+          </div>
+          <form
+            className="chat-input"
+            onSubmit={(event) => {
+              event.preventDefault();
+              sendMessage();
+            }}
+          >
+            <input className="input" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask resi a health question..." />
+            <button className="button" type="submit"><Send size={18} /> Send</button>
+          </form>
+        </div>
       </section>
-      <aside className="grid">
-        <div className="card" style={{ textAlign: "center" }}>
-          <Avatar character="See" cue={cue} />
-          <div className="chip-row" style={{ justifyContent: "center", marginTop: 12 }}>
-            <select className="select" value={language} onChange={(event) => setLanguage(event.target.value)} aria-label="Chat language">
-              <option value="en">English</option>
-              <option value="zh">Mandarin Chinese</option>
-              <option value="ms">Malay</option>
-              <option value="ta">Tamil</option>
-            </select>
-            <button className="ghost-button" onClick={() => lastMeta && speakWithBrowser(lastMeta.response)}><Volume2 size={17} /> Voice</button>
+
+      <aside className="chat-side-panel">
+        <div className="card subtle">
+          <h3>Try a demo prompt</h3>
+          <div className="grid">
+            {demoPrompts.map((prompt) => <button className="chip" key={prompt} onClick={() => sendMessage(prompt)}>{prompt}</button>)}
           </div>
         </div>
         <div className="card">
-          <h3>Safety signal</h3>
-          <p><span className={`badge ${lastMeta?.riskAssessment.severity === "HIGH" || lastMeta?.riskAssessment.severity === "CRITICAL" ? "danger" : lastMeta?.riskAssessment.severity === "MODERATE" ? "warn" : ""}`}>{lastMeta?.riskAssessment.severity ?? "LOW"}</span></p>
-          <p className="muted">{lastMeta?.riskAssessment.rationale ?? "Educational chat. resi is not medical diagnosis or emergency care."}</p>
-          {lastMeta?.riskAssessment.parentAlertRecommended ? <p className="badge danger">Parent alert recommended</p> : null}
+          <h3>What resi is tracking</h3>
+          <p><span className={`badge ${lastMeta?.riskAssessment.severity === "HIGH" || lastMeta?.riskAssessment.severity === "CRITICAL" ? "danger" : lastMeta?.riskAssessment.severity === "MODERATE" ? "warn" : ""}`}>{lastMeta?.riskAssessment.severity ?? "LOW"} support need</span></p>
+          <p className="muted">{lastMeta?.riskAssessment.rationale ?? "General learning. Safety concerns may be shared to help keep you safe."}</p>
+          {lastMeta?.riskAssessment.parentAlertRecommended ? <p className="badge danger">Support alert recommended</p> : null}
         </div>
         <div className="card">
-          <h3>Recommended next</h3>
+          <h3>Recommended materials</h3>
           {recommendations.length ? recommendations.map((material) => <p key={material.id}><strong>{material.title}</strong><br /><span className="muted">{material.summary}</span></p>) : <p className="muted">Ask a question to get materials.</p>}
           {lastMeta?.simplifiedSummary ? <p className="muted"><strong>Simple summary:</strong> {lastMeta.simplifiedSummary}</p> : null}
           {lastMeta?.teachBackQuestion ? <p className="muted"><strong>Teach-back:</strong> {lastMeta.teachBackQuestion}</p> : null}
-          {lastMeta?.trustedAdultSupport?.shouldSuggest ? <p className="chip">Trusted adult script ready</p> : null}
-          {lastMeta?.quizSuggestion ? <p className="chip">Quiz: {lastMeta.quizSuggestion.topic}</p> : null}
+          <div className="chip-row">
+            {lastMeta?.trustedAdultSupport?.shouldSuggest ? <span className="chip">Trusted adult script ready</span> : null}
+            {lastMeta?.quizSuggestion ? <span className="chip">Quiz: {lastMeta.quizSuggestion.topic}</span> : null}
+          </div>
+          <button className="ghost-button" type="button" onClick={() => lastMeta && speakWithBrowser(lastMeta.response)}><Volume2 size={17} /> Read aloud</button>
         </div>
       </aside>
     </div>

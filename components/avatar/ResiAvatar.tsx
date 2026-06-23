@@ -1,0 +1,23 @@
+import { resolveAvatarAsset, type AvatarCharacter } from "@/src/data/avatarManifest";
+import type { AvatarCue } from "@/src/lib/types";
+import { AvatarAssetMissingNotice } from "@/components/avatar/AvatarAssetMissingNotice";
+
+export function ResiAvatar({
+  character = "See",
+  cue = "wave",
+  size = "md",
+  showMissingNotice = true
+}: {
+  character?: Exclude<AvatarCharacter, "Custom">;
+  cue?: AvatarCue;
+  size?: "sm" | "md" | "lg" | "xl";
+  showMissingNotice?: boolean;
+}) {
+  const asset = resolveAvatarAsset(character, cue);
+  return (
+    <figure className={`resi-avatar resi-avatar-${size}`}>
+      <img src={asset.filePath} alt={asset.altText} />
+      {showMissingNotice ? <AvatarAssetMissingNotice asset={asset} /> : null}
+    </figure>
+  );
+}

@@ -57,6 +57,14 @@ Key defaults:
 6. Open `/youth/progress` to see literacy evidence.
 7. Open `/parent` and `/parent/asha` to see summaries and alerts.
 8. Open `/admin` and `/admin/analytics` to see aggregate trends.
+9. Open `/demo/personalization` to switch youth profiles and compare age-band differences.
+
+Direct demo routes:
+
+- Youth: `/youth`
+- Parent: `/parent`
+- Admin: `/admin`
+- Personalization demo: `/demo/personalization`
 
 ## Features
 
@@ -67,6 +75,16 @@ Key defaults:
 - Mock AI pipeline with topic detection, retrieval, risk scoring, structured response metadata, and Nutbeam literacy signals.
 - Avatar manifest in `src/data/avatarManifest.ts`.
 - Prisma schema for future SQLite/PostgreSQL persistence.
+
+## Avatar Audit
+
+Run:
+
+```bash
+npm run avatar:audit
+```
+
+The script lists required Ree/See PNG poses, present files, missing files, and concrete suggested filenames to upload.
 
 ## Safety Limits
 

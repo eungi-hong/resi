@@ -11,7 +11,7 @@ export const aiResponseSchema = z.object({
   recommendedMaterialIds: z.array(z.string()),
   quizSuggestion: z.object({ topic: z.string(), reason: z.string() }).nullable(),
   trustedAdultSupport: z.object({ shouldSuggest: z.boolean(), script: z.string() }).nullable(),
-  avatarCue: z.enum(["idle", "wave", "thinking", "explaining", "celebrate", "concerned", "resource", "quiz", "safe_escalation"]),
+  avatarCue: z.enum(["idle", "wave", "thinking", "explaining", "pointing", "reading", "quiz", "celebrate", "concerned", "listening", "writing", "resource", "safe_escalation", "parent_guidance", "dashboard_pointer"]),
   riskAssessment: z.object({
     severity: z.enum(["NONE", "LOW", "MODERATE", "HIGH", "CRITICAL"]),
     riskTypes: z.array(z.string()),

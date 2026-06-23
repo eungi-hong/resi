@@ -3,7 +3,22 @@ export type Language = "en" | "zh" | "ms" | "ta";
 export type AgeBand = "CHILD_10_12" | "TEEN_13_15" | "OLDER_TEEN_16_18";
 export type LiteracyDimension = "FUNCTIONAL" | "INTERACTIVE" | "CRITICAL";
 export type Severity = "NONE" | "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
-export type AvatarCue = "idle" | "wave" | "thinking" | "explaining" | "celebrate" | "concerned" | "resource" | "quiz" | "safe_escalation";
+export type AvatarCue =
+  | "idle"
+  | "wave"
+  | "thinking"
+  | "explaining"
+  | "pointing"
+  | "reading"
+  | "quiz"
+  | "celebrate"
+  | "concerned"
+  | "listening"
+  | "writing"
+  | "resource"
+  | "safe_escalation"
+  | "parent_guidance"
+  | "dashboard_pointer";
 
 export type DemoUser = {
   id: string;
@@ -29,6 +44,17 @@ export type EducationMaterial = {
   literacyDimension: LiteracyDimension;
   sourceStatus: "SAMPLE" | "UNVERIFIED" | "OFFICIAL_REVIEWED";
   localContextNote: string;
+  estimatedMinutes?: number;
+  difficulty?: "Starter" | "Explorer" | "Decision guide";
+  goalLabel?: "Understand" | "Practise" | "Question";
+  progress?: number;
+  whatYouLearn?: readonly string[];
+  quickExplainer?: string;
+  scenario?: string;
+  practiceActivity?: readonly string[];
+  mythCheck?: { myth: string; reality: string };
+  trustedAdultScript?: string;
+  avatarCue?: AvatarCue;
 };
 
 export type QuizQuestion = {

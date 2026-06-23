@@ -40,29 +40,29 @@ export function AdminAnalyticsCharts() {
   return (
     <div className="grid grid-2" style={{ marginBottom: 18 }}>
       <div className="card chart-card">
-        <h2>Literacy by topic</h2>
+        <h2>Health literacy by topic</h2>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={literacyByTopic}>
             <CartesianGrid strokeDasharray="3 3" stroke="#d8e7df" />
             <XAxis dataKey="topic" />
             <YAxis domain={[0, 100]} />
             <Tooltip />
-            <Bar dataKey="functional" fill="#087f73" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="interactive" fill="#3f7cac" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="critical" fill="#f2b84b" radius={[4, 4, 0, 0]} />
+            <Bar name="Understanding information" dataKey="functional" fill="#087f73" radius={[4, 4, 0, 0]} />
+            <Bar name="Applying and seeking support" dataKey="interactive" fill="#3f7cac" radius={[4, 4, 0, 0]} />
+            <Bar name="Evaluating claims and pressure" dataKey="critical" fill="#f2b84b" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
       <div className="card chart-card">
-        <h2>Risk trend</h2>
+        <h2>Support need trend</h2>
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={riskTrend}>
             <CartesianGrid strokeDasharray="3 3" stroke="#d8e7df" />
             <XAxis dataKey="week" />
             <YAxis allowDecimals={false} />
             <Tooltip />
-            <Line type="monotone" dataKey="moderate" stroke="#f2b84b" strokeWidth={3} />
-            <Line type="monotone" dataKey="high" stroke="#c24141" strokeWidth={3} />
+            <Line name="Moderate support need" type="monotone" dataKey="moderate" stroke="#f2b84b" strokeWidth={3} />
+            <Line name="High support need" type="monotone" dataKey="high" stroke="#c24141" strokeWidth={3} />
           </LineChart>
         </ResponsiveContainer>
       </div>
