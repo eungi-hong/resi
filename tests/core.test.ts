@@ -55,13 +55,13 @@ describe("resi core safety and metrics", () => {
   it("falls back avatar selection", () => {
     const asset = resolveAvatarAsset("Ree", "safe_escalation");
     expect(asset.id).toBe("ree_safe_escalation");
-    expect(asset.missing).toBe(true);
+    expect(asset.missing).toBe(false);
+    expect(asset.filePath).toBe("/avatars/ree/ree_safe_escalation.png");
   });
 
-  it("reports missing required avatar assets for demo follow-up", () => {
+  it("has required avatar assets for the production demo", () => {
     const missing = getMissingAvatarAssets();
-    expect(missing.length).toBeGreaterThan(0);
-    expect(missing.some((asset) => asset.expectedPath.includes("ree_safe_escalation.png"))).toBe(true);
+    expect(missing).toHaveLength(0);
   });
 
   it("enforces demo access-control helpers", () => {

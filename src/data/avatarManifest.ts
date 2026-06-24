@@ -38,16 +38,11 @@ export const requiredAvatarCues: AvatarCue[] = [
 ];
 
 const presentRaster = new Set([
-  "ree_explaining",
-  "ree_reading",
-  "ree_thinking",
+  ...requiredAvatarCues.flatMap((cue) => [`ree_${cue}`, `see_${cue}`]),
   "ree_waving",
   "ree_welcoming",
-  "see_explaining",
-  "see_thinking",
   "see_waving",
-  "see_welcoming",
-  "see_writing"
+  "see_welcoming"
 ]);
 
 const svgFallback = new Set([
@@ -70,8 +65,8 @@ const svgFallback = new Set([
 ]);
 
 const cueAliases: Partial<Record<AvatarCue, string>> = {
-  wave: "waving",
-  parent_guidance: "waving",
+  wave: "wave",
+  parent_guidance: "wave",
   dashboard_pointer: "explaining"
 };
 
