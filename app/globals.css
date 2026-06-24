@@ -281,6 +281,23 @@ button {
   box-shadow: none;
 }
 
+.login-card {
+  display: grid;
+  gap: 10px;
+  min-height: 190px;
+  align-content: start;
+}
+
+.login-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 14px 34px rgba(24, 66, 54, 0.1);
+}
+
+.login-card .button {
+  align-self: end;
+  margin-top: auto;
+}
+
 .chart-card {
   min-height: 340px;
 }

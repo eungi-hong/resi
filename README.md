@@ -1,13 +1,56 @@
 # resi
 
-resi is a youth health literacy AI associate for TheFirst Spark challenge hackathon, focused on Singapore youth. It helps young people ask health questions, learn through age-appropriate materials, practise quizzes, and prepare conversations with trusted adults. Parents see supportive summaries and alerts; admins see aggregate, non-identifying trends.
+resi is a youth health literacy AI associate for Singapore youth ages 10-18. It combines an avatar-led chat experience, age-specific learning modules, topic quizzes, trusted-adult conversation support, parent summaries, and aggregate admin analytics.
 
-## Submission
+The product is designed around one principle: help youth learn and prepare without turning the app into a doctor, therapist, emergency service, or surveillance tool.
 
-- Submit the deployed Vercel URL for `/demo`.
-- Submit the GitHub repo: `https://github.com/eungi-hong/resi`.
-- Start the judge walkthrough from the `/demo` judge path.
-- Keep `/demo/personalization` as an optional backup route if judges ask about age/profile differences.
+## Product Overview
+
+- **Youth experience:** dashboard, educational chat, learning library, topic-specific quizzes, progress evidence, resources, and trusted-adult scripts.
+- **Parent experience:** linked-youth summaries, safety alerts, and conversation guides without exposing raw youth chat transcripts by default.
+- **Admin experience:** aggregate literacy and support-need trends with small-group privacy suppression.
+- **Language:** English is the production demo default.
+- **Avatar system:** Ree and See use manifest-driven PNG poses with SVG fallback support.
+
+## Technical Architecture
+
+resi is a Next.js App Router application with TypeScript, Prisma, PostgreSQL, and modular AI providers.
+
+```text
+Browser
+  -> Next.js App Router pages and API routes
+  -> AI orchestration layer
+  -> Prisma Client
+  -> Hosted PostgreSQL
+```
+
+Key modules:
+
+- `app/`: Next.js pages and API routes.
+- `components/`: shared UI, chat, quiz, admin chart, and avatar components.
+- `src/lib/ai/`: chat orchestration, OpenAI adapter, mock fallback, retrieval, risk classification, and literacy scoring.
+- `src/lib/data/`: DB-backed read/write helpers and chat persistence.
+- `src/data/`: demo seed data and avatar manifest.
+- `prisma/`: schema, migration, and seed script.
+
+## AI And Safety
+
+The chat pipeline combines deterministic local guardrails with an optional OpenAI provider:
+
+1. Detect the likely health topic.
+2. Retrieve matching local learning materials.
+3. Classify safety and support risk.
+4. Generate or fall back to an educational response.
+5. Return structured metadata for avatar cues, recommendations, quiz suggestions, trusted-adult support, and health-literacy signals.
+
+If `OPENAI_API_KEY` is missing, slow, or unavailable, resi uses the local safe response path. `OPENAI_TIMEOUT_MS` defaults to `2500` so the demo remains responsive.
+
+Safety boundaries:
+
+- No diagnosis, therapy, emergency response, medication dosing, or treatment plans.
+- Critical-risk prompts use safety-first language and trusted-adult escalation.
+- Parent views show supportive summaries and alerts, not default raw transcript access.
+- Admin analytics suppress small groups to reduce re-identification risk.
 
 ## Run Locally
 
@@ -17,51 +60,41 @@ npm run db:generate
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. If that port is busy, Next.js will choose another local port.
 
-Optional:
+Useful checks:
 
 ```bash
-npm run test
-npm run db:seed
+npm run avatar:audit
+npm test
+npm run build
 ```
 
 ## Environment
 
-Copy `.env.example` to `.env.local` and add keys only if enabling live providers. The app works without secrets by using the local safe AI fallback.
+Copy `.env.example` to `.env.local` and configure only the providers you need.
 
-Key defaults:
+Important variables:
 
-- `AI_PROVIDER=openai`
-- `OPENAI_API_KEY` enables live OpenAI responses.
-- `OPENAI_TIMEOUT_MS=2500` keeps the demo responsive by falling back locally if the provider is slow.
-- `DATABASE_URL` must point to hosted Postgres for Mode B deployment
-- `ELEVENLABS_API_KEY` blank disables ElevenLabs voice
+- `DATABASE_URL`: hosted PostgreSQL connection string.
+- `DIRECT_URL`: direct migration connection string when required by the database provider.
+- `AI_PROVIDER=openai`: enables the OpenAI provider path when an API key is present.
+- `OPENAI_API_KEY`: optional for local development; local fallback works without it.
+- `OPENAI_TIMEOUT_MS=2500`: keeps chat responsive by falling back locally if the provider is slow.
+- `NEXT_PUBLIC_DEMO_MODE=true`: enables demo role switching.
+- `NEXT_PUBLIC_SHOW_DEMO_ROLE_SWITCHER=true`: shows quick portal switching controls.
+- `DEMO_SEED_SECRET`: protects the seed endpoint or seed workflow when used in deployment.
 
-## Mode B: Hosted Postgres Deployment
+## Deployment
 
-The public hackathon deployment path is Mode B: hosted Postgres with Prisma. Demo data should be persisted in Postgres; chat can use OpenAI when configured and falls back locally if unavailable.
+The production deployment target is Vercel with hosted PostgreSQL.
 
-Recommended providers:
+Recommended setup:
 
-- Supabase Postgres
-- Neon Postgres
-- Vercel Postgres
-- Any managed Postgres compatible with Prisma
-
-Required Vercel environment variables:
-
-- `DATABASE_URL`
-- `DIRECT_URL` when the provider requires a direct migration connection
-- `NEXT_PUBLIC_DEMO_MODE=true`
-- `NEXT_PUBLIC_SHOW_DEMO_ROLE_SWITCHER=true`
-- `AI_PROVIDER=openai`
-- `NEXT_PUBLIC_ENABLE_MOCK_AI=false`
-- `DEMO_SEED_SECRET`
-- optional `OPENAI_API_KEY`
-- optional `ELEVENLABS_API_KEY`
-
-Deployment commands:
+1. Create a hosted PostgreSQL database.
+2. Set `DATABASE_URL` and `DIRECT_URL` in Vercel.
+3. Set the demo and AI environment variables listed above.
+4. Run migrations and seed data.
 
 ```bash
 npm run db:migrate:deploy
@@ -74,48 +107,52 @@ Health checks:
 - `/api/health`
 - `/api/health/db`
 
-See [Mode B deployment docs](docs/deployment-mode-b.md), [live demo checklist](docs/live-demo-checklist.md), and [hackathon submission notes](docs/hackathon-submission.md).
+## Demo Routes
+
+Start at:
+
+- `/demo`
+
+Core routes:
+
+- `/youth`
+- `/youth/chat`
+- `/youth/library`
+- `/youth/library/vaping?ageBand=TEEN_13_15`
+- `/youth/quiz?topic=vaping&ageBand=TEEN_13_15`
+- `/youth/progress`
+- `/parent`
+- `/parent/asha`
+- `/admin`
+- `/admin/analytics`
+- `/admin/content`
+
+Optional profile comparison:
+
+- `/demo/personalization`
 
 ## Demo Accounts
 
-- Youth: `asha`, age 13, English
-- Youth: `weijun`, age 16, English
-- Youth: `nabil`, age 12, English
-- Youth: `priya`, age 17, English preference
+- Youth: `asha`, age 13
+- Youth: `weijun`, age 16
+- Youth: `nabil`, age 12
+- Youth: `priya`, age 17
 - Parent: `parent`
 - Admin: `admin`
 
-## Demo Script
+## Demo Walkthrough
 
 1. Open `/demo`.
-2. Click “Ask resi” and ask: “Is vaping actually that bad if everyone does it?”
-3. Click “Learn safely” to show the youth dashboard, quests, progress measures, and learning route.
+2. Click **Ask resi** and ask: “Is vaping actually that bad if everyone does it?”
+3. Click **Learn safely** to show the youth dashboard, quests, progress measures, and learning route.
 4. Open `/youth/library`, apply a filter, then open the vaping module.
-5. Start the topic-specific quiz from the module or open `/youth/quiz?topic=vaping&ageBand=TEEN_13_15`.
+5. Start the topic-specific quiz from the module.
 6. Open `/parent/asha` to show supportive parent insight without raw chat transcripts.
 7. Open `/admin/analytics` to show aggregate trends and small-group privacy suppression.
 
-Direct demo routes:
+## Avatar Assets
 
-- Judge path: `/demo`
-- Youth: `/youth`
-- Parent: `/parent`
-- Admin: `/admin`
-- Optional personalization demo: `/demo/personalization`
-
-## Features
-
-- Demo role-switch auth with cookie-based portal protection for youth, parent, and admin routes.
-- Youth portal with dashboard, chat, learning library, quiz, progress, profile, resources, and trusted-adult scripts.
-- Parent portal with linked youth summaries, risk alerts, and conversation guides.
-- Admin portal with aggregate analytics, content management, risk trends, and privacy settings.
-- OpenAI-backed youth chat with local safe fallback, topic detection, retrieval, risk scoring, structured response metadata, and Nutbeam literacy signals.
-- Topic-specific learning modules and quizzes.
-- Server-rendered analytics charts for a lighter production bundle.
-- Avatar manifest in `src/data/avatarManifest.ts` with audited Ree/See pose filenames.
-- Prisma schema and DB-backed demo persistence.
-
-## Avatar Audit
+Avatar PNGs live under `public/avatars`.
 
 Run:
 
@@ -123,16 +160,27 @@ Run:
 npm run avatar:audit
 ```
 
-The script lists required Ree/See PNG poses, present files, missing files, and concrete filenames to add under `public/avatars`.
+The audit verifies required Ree and See pose filenames:
 
-## Safety Limits
+- `idle`
+- `wave`
+- `thinking`
+- `explaining`
+- `pointing`
+- `reading`
+- `quiz`
+- `celebrate`
+- `concerned`
+- `listening`
+- `writing`
+- `resource`
+- `safe_escalation`
 
-resi is educational and does not provide diagnosis, therapy, emergency response, medication dosing, or treatment plans. Critical-risk prompts trigger safety-first language and trusted-adult escalation. Demo resources avoid invented hotline numbers or official policy claims.
+Some poses intentionally reuse the same visual asset, for example `wave`/`waving`, `listening`/`thinking`, and `safe_escalation`/`concerned`.
 
-## Future Work
+## Current Limitations
 
-- Add real auth and consent flows.
-- Add reviewed Singapore source links and deeper RAG content.
-- Add reviewed translations after the English demo path is approved.
-- Add ElevenLabs API route for avatar voice.
-- Add admin avatar upload/registration workflow.
+- Demo role switching is not production authentication.
+- English is the default reviewed experience; translations are future work.
+- Health content is demo content and should be reviewed before real-world deployment.
+- Voice is optional and currently falls back to browser speech support.
