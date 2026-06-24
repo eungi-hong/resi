@@ -2,15 +2,12 @@
 
 resi is a youth health literacy AI associate for TheFirst Spark challenge hackathon, focused on Singapore youth. It helps young people ask health questions, learn through age-appropriate materials, practise quizzes, and prepare conversations with trusted adults. Parents see supportive summaries and alerts; admins see aggregate, non-identifying trends.
 
-## Assumptions
+## Submission
 
-- MVP age range: 10-18.
-- Demo role-switching auth, not production auth.
-- OpenAI runs when `AI_PROVIDER=openai` and `OPENAI_API_KEY` are configured; local mock AI remains as a no-key or provider-error fallback.
-- ElevenLabs voice is optional and disabled unless keys are provided.
-- Mobbin MCP was used for UI research: Gemini/Pi/Alan chat patterns, Bloom/Duolingo learning progression, ClassDojo-style parent progress cards, and Canny/Steep/Mailchimp-style admin analytics.
-- Avatar assets are placeholder SVGs and manifest-driven.
-- Parent visibility defaults to summaries plus selected safety alerts.
+- Submit the deployed Vercel URL for `/demo`.
+- Submit the GitHub repo: `https://github.com/eungi-hong/resi`.
+- Start the judge walkthrough from the `/demo` judge path.
+- Keep `/demo/personalization` as an optional backup route if judges ask about age/profile differences.
 
 ## Run Locally
 
@@ -31,18 +28,19 @@ npm run db:seed
 
 ## Environment
 
-Copy `.env.example` to `.env.local` and add keys only if enabling live providers. The app works in mocked mode without secrets.
+Copy `.env.example` to `.env.local` and add keys only if enabling live providers. The app works without secrets by using the local safe AI fallback.
 
 Key defaults:
 
 - `AI_PROVIDER=openai`
-- `OPENAI_API_KEY` enables live OpenAI responses
+- `OPENAI_API_KEY` enables live OpenAI responses.
+- `OPENAI_TIMEOUT_MS=2500` keeps the demo responsive by falling back locally if the provider is slow.
 - `DATABASE_URL` must point to hosted Postgres for Mode B deployment
-- `ELEVENLABS_API_KEY` blank disables ElevenLabs voice.
+- `ELEVENLABS_API_KEY` blank disables ElevenLabs voice
 
 ## Mode B: Hosted Postgres Deployment
 
-The public hackathon deployment path is Mode B: hosted Postgres with Prisma. The app still supports mock AI and text-only voice fallback, but production demo data should be persisted in Postgres.
+The public hackathon deployment path is Mode B: hosted Postgres with Prisma. Demo data should be persisted in Postgres; chat can use OpenAI when configured and falls back locally if unavailable.
 
 Recommended providers:
 
@@ -80,32 +78,29 @@ See [Mode B deployment docs](docs/deployment-mode-b.md), [live demo checklist](d
 
 ## Demo Accounts
 
-- Youth: `asha`, age 13, English/Tamil preference
-- Youth: `weijun`, age 16, English/Mandarin preference
-- Youth: `nabil`, age 12, English/Malay preference
+- Youth: `asha`, age 13, English
+- Youth: `weijun`, age 16, English
+- Youth: `nabil`, age 12, English
 - Youth: `priya`, age 17, English preference
 - Parent: `parent`
 - Admin: `admin`
 
 ## Demo Script
 
-1. Go to `/login` and choose Asha.
-2. Open `/youth/chat`.
-3. Try: “Is vaping actually that bad if everyone does it?”
-4. See the adaptive response, avatar cue, recommended material, quiz suggestion, and risk metadata.
-5. Open `/youth/quiz` and complete the quiz.
-6. Open `/youth/progress` to see literacy evidence.
-7. Open `/parent` and `/parent/asha` to see summaries and alerts.
-8. Open `/admin` and `/admin/analytics` to see aggregate trends.
-9. Open `/demo/personalization` to switch youth profiles and compare age-band differences.
+1. Open `/demo`.
+2. Click “Ask resi” and ask: “Is vaping actually that bad if everyone does it?”
+3. Click “Learn safely” to show the youth dashboard, quests, progress measures, and learning route.
+4. Open `/youth/library`, apply a filter, then open the vaping module.
+5. Start the topic-specific quiz from the module or open `/youth/quiz?topic=vaping&ageBand=TEEN_13_15`.
+6. Open `/parent/asha` to show supportive parent insight without raw chat transcripts.
+7. Open `/admin/analytics` to show aggregate trends and small-group privacy suppression.
 
 Direct demo routes:
 
+- Judge path: `/demo`
 - Youth: `/youth`
 - Parent: `/parent`
 - Admin: `/admin`
-- Demo: `/demo`
-- Judge path: `/demo`
 - Optional personalization demo: `/demo/personalization`
 
 ## Features
@@ -114,9 +109,11 @@ Direct demo routes:
 - Youth portal with dashboard, chat, learning library, quiz, progress, profile, resources, and trusted-adult scripts.
 - Parent portal with linked youth summaries, risk alerts, and conversation guides.
 - Admin portal with aggregate analytics, content management, risk trends, and privacy settings.
-- OpenAI-backed youth chat with local topic detection, retrieval, risk scoring, structured response metadata, and Nutbeam literacy signals.
-- Avatar manifest in `src/data/avatarManifest.ts`.
-- Prisma schema for future SQLite/PostgreSQL persistence.
+- OpenAI-backed youth chat with local safe fallback, topic detection, retrieval, risk scoring, structured response metadata, and Nutbeam literacy signals.
+- Topic-specific learning modules and quizzes.
+- Server-rendered analytics charts for a lighter production bundle.
+- Avatar manifest in `src/data/avatarManifest.ts` with audited Ree/See pose filenames.
+- Prisma schema and DB-backed demo persistence.
 
 ## Avatar Audit
 
@@ -126,7 +123,7 @@ Run:
 npm run avatar:audit
 ```
 
-The script lists required Ree/See PNG poses, present files, missing files, and concrete suggested filenames to upload.
+The script lists required Ree/See PNG poses, present files, missing files, and concrete filenames to add under `public/avatars`.
 
 ## Safety Limits
 
@@ -134,9 +131,8 @@ resi is educational and does not provide diagnosis, therapy, emergency response,
 
 ## Future Work
 
-- Wire Prisma Client persistence.
 - Add real auth and consent flows.
 - Add reviewed Singapore source links and deeper RAG content.
-- Add reviewed Singapore source links and complete translations.
+- Add reviewed translations after the English demo path is approved.
 - Add ElevenLabs API route for avatar voice.
 - Add admin avatar upload/registration workflow.
