@@ -78,6 +78,7 @@ Important variables:
 
 - `DATABASE_URL`: hosted PostgreSQL connection string.
 - `DIRECT_URL`: direct migration connection string when required by the database provider.
+- `RESI_USE_DATABASE=true`: opt into DB-backed reads and writes. Leave unset for the fastest seeded demo mode.
 - `AI_PROVIDER=openai`: enables the OpenAI provider path when an API key is present.
 - `OPENAI_API_KEY`: optional for local development; local fallback works without it.
 - `OPENAI_TIMEOUT_MS=2500`: keeps chat responsive by falling back locally if the provider is slow.
@@ -87,14 +88,15 @@ Important variables:
 
 ## Deployment
 
-The production deployment target is Vercel with hosted PostgreSQL.
+The production deployment target is Vercel. The public demo can run from bundled seed data for fast, stable page loads, while a hosted PostgreSQL database remains available for persistent deployments.
 
 Recommended setup:
 
 1. Create a hosted PostgreSQL database.
 2. Set `DATABASE_URL` and `DIRECT_URL` in Vercel.
-3. Set the demo and AI environment variables listed above.
-4. Run migrations and seed data.
+3. Set `RESI_USE_DATABASE=true` only when the deployment should read and write hosted database data.
+4. Set the demo and AI environment variables listed above.
+5. Run migrations and seed data if DB mode is enabled.
 
 ```bash
 npm run db:migrate:deploy

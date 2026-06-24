@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { hasDatabaseUrl, prisma } from "@/src/lib/db";
+import { databaseConfigured, databaseEnabled, prisma } from "@/src/lib/db";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  if (!hasDatabaseUrl) {
+  if (!databaseConfigured) {
     return NextResponse.json({ ok: false, databaseConfigured: false, error: "DATABASE_URL is not configured." }, { status: 503 });
   }
 
@@ -18,6 +18,7 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       databaseConfigured: true,
+      databaseEnabled,
       seedStatus: users >= 6 && materials >= 21 ? "ready" : "seed-data-missing",
       counts: { users, materials, conversations }
     });

@@ -15,9 +15,16 @@ export function ResiAvatar({
   showMissingNotice?: boolean;
 }) {
   const asset = resolveAvatarAsset(character, cue);
+  const isPrimaryAvatar = size === "lg" || size === "xl";
   return (
     <figure className={`resi-avatar resi-avatar-${size}`}>
-      <img src={asset.filePath} alt={asset.altText} />
+      <img
+        src={asset.filePath}
+        alt={asset.altText}
+        loading={isPrimaryAvatar ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={isPrimaryAvatar ? "high" : "low"}
+      />
       {showMissingNotice ? <AvatarAssetMissingNotice asset={asset} /> : null}
     </figure>
   );
