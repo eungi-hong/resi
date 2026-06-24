@@ -4,9 +4,9 @@ Mode B uses hosted Postgres as the source of truth for demo data and live intera
 
 Architecture:
 
-Browser -> Next.js App Router on Vercel -> Prisma Client -> Hosted Postgres
+Browser -> Next.js App Router on Vercel -> OpenAI Responses API + Prisma Client -> Hosted Postgres
 
-Mock AI can remain enabled, but chat messages, assistant responses, risk assessments, health literacy updates, parent insights, alerts, quiz attempts, education materials, and admin snapshots persist in Postgres.
+OpenAI generates the youth-facing chat response when `OPENAI_API_KEY` is configured. Local deterministic topic detection, risk assessment, retrieval, and literacy signals still shape the response and persistence. If OpenAI is temporarily unavailable, chat falls back to a local safe response so the live demo does not break. Chat messages, assistant responses, risk assessments, health literacy updates, parent insights, alerts, quiz attempts, education materials, and admin snapshots persist in Postgres.
 
 ## Provider Setup
 
@@ -56,10 +56,12 @@ The seed creates fictional youth, parents, admin, learning materials, quizzes, m
    - `DIRECT_URL`
    - `NEXT_PUBLIC_DEMO_MODE=true`
    - `NEXT_PUBLIC_SHOW_DEMO_ROLE_SWITCHER=true`
-   - `AI_PROVIDER=mock`
-   - `NEXT_PUBLIC_ENABLE_MOCK_AI=true`
+   - `AI_PROVIDER=openai`
+   - `OPENAI_API_KEY`
+   - `OPENAI_BASE_URL=https://api.openai.com/v1`
+   - `OPENAI_MODEL=gpt-4.1-mini`
+   - `NEXT_PUBLIC_ENABLE_MOCK_AI=false` for the UI flag; server chat still has a safe fallback
    - `DEMO_SEED_SECRET`
-   - optional `OPENAI_API_KEY`
    - optional `ELEVENLABS_API_KEY`
 4. Run `npm run db:migrate:deploy`.
 5. Run `npm run db:seed`.
@@ -72,4 +74,4 @@ If a deployment fails before migration, redeploy the previous Vercel build. If a
 
 ## Known Limitations
 
-Auth is demo role-switch auth, not production identity. Mock AI is acceptable for the hackathon demo. Some avatar PNG poses are still missing and fall back to SVG or placeholder assets.
+Auth is demo role-switch auth, not production identity. If `OPENAI_API_KEY` is missing, the app falls back to local mock AI so the demo does not hard-crash. Some avatar PNG poses are still missing and fall back to SVG or placeholder assets.

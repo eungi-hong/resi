@@ -2,14 +2,15 @@
 
 resi is a Next.js App Router MVP with three portals:
 
-- Youth: dashboard, mock AI chat, library, quizzes, progress, profile, trusted-adult tools.
+- Youth: dashboard, OpenAI-backed chat, library, quizzes, progress, profile, trusted-adult tools.
 - Parent: summary-based linked-youth insights, alerts, and conversation guides.
 - Admin: aggregate analytics, content management, risk trends, and governance settings.
 
 The AI layer is modular:
 
 - `src/lib/ai/orchestrator.ts` runs the pipeline.
-- `mockProvider.ts` powers demos without keys.
+- `openaiProvider.ts` calls the OpenAI Responses API when configured.
+- `mockProvider.ts` is the no-key fallback.
 - `risk.ts` classifies youth-specific risk.
 - `healthLiteracyMetrics.ts` implements Nutbeam-style scoring helpers.
 - `retrieval.ts` retrieves local education material.

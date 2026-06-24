@@ -1,20 +1,3 @@
-"use client";
-
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
-
 const literacyByTopic = [
   { topic: "Vaping", functional: 64, interactive: 51, critical: 43 },
   { topic: "Screen", functional: 71, interactive: 58, critical: 52 },
@@ -29,56 +12,56 @@ const riskTrend = [
   { week: "W4", moderate: 19, high: 5 }
 ];
 
-const languageShare = [
-  { name: "English", value: 58, color: "#087f73" },
-  { name: "Mandarin", value: 18, color: "#3f7cac" },
-  { name: "Malay", value: 14, color: "#f2b84b" },
-  { name: "Tamil", value: 10, color: "#e96f5b" }
-];
+const maxRisk = Math.max(...riskTrend.flatMap((item) => [item.moderate, item.high]));
 
 export function AdminAnalyticsCharts() {
   return (
-    <div className="grid grid-2" style={{ marginBottom: 18 }}>
+    <div className="grid grid-2 analytics-grid">
       <div className="card chart-card">
         <h2>Health literacy by topic</h2>
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={literacyByTopic}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#d8e7df" />
-            <XAxis dataKey="topic" />
-            <YAxis domain={[0, 100]} />
-            <Tooltip />
-            <Bar name="Understanding information" dataKey="functional" fill="#087f73" radius={[4, 4, 0, 0]} />
-            <Bar name="Applying and seeking support" dataKey="interactive" fill="#3f7cac" radius={[4, 4, 0, 0]} />
-            <Bar name="Evaluating claims and pressure" dataKey="critical" fill="#f2b84b" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="bar-chart" aria-label="Health literacy by topic">
+          {literacyByTopic.map((item) => (
+            <div className="bar-group" key={item.topic}>
+              <span className="bar-label">{item.topic}</span>
+              <div className="bar-stack">
+                <span className="bar-fill primary" style={{ width: `${item.functional}%` }}><b>{item.functional}</b></span>
+                <span className="bar-fill blue" style={{ width: `${item.interactive}%` }}><b>{item.interactive}</b></span>
+                <span className="bar-fill gold" style={{ width: `${item.critical}%` }}><b>{item.critical}</b></span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="chart-legend">
+          <span><i className="legend-dot primary" />Understand</span>
+          <span><i className="legend-dot blue" />Apply</span>
+          <span><i className="legend-dot gold" />Question</span>
+        </div>
       </div>
       <div className="card chart-card">
         <h2>Support need trend</h2>
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={riskTrend}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#d8e7df" />
-            <XAxis dataKey="week" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Line name="Moderate support need" type="monotone" dataKey="moderate" stroke="#f2b84b" strokeWidth={3} />
-            <Line name="High support need" type="monotone" dataKey="high" stroke="#c24141" strokeWidth={3} />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="trend-chart" aria-label="Support need trend">
+          {riskTrend.map((item) => (
+            <div className="trend-week" key={item.week}>
+              <div className="trend-bars">
+                <span className="trend-bar moderate" style={{ height: `${(item.moderate / maxRisk) * 100}%` }} />
+                <span className="trend-bar high" style={{ height: `${(item.high / maxRisk) * 100}%` }} />
+              </div>
+              <span className="bar-label">{item.week}</span>
+            </div>
+          ))}
+        </div>
+        <div className="chart-legend">
+          <span><i className="legend-dot gold" />Moderate</span>
+          <span><i className="legend-dot danger" />High</span>
+        </div>
       </div>
       <div className="card chart-card">
-        <h2>Language distribution</h2>
-        <ResponsiveContainer width="100%" height={240}>
-          <PieChart>
-            <Pie data={languageShare} dataKey="value" nameKey="name" innerRadius={54} outerRadius={86} paddingAngle={3}>
-              {languageShare.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-        <div className="chip-row">
-          {languageShare.map((entry) => <span className="chip" key={entry.name}>{entry.name} {entry.value}%</span>)}
+        <h2>Learning language setting</h2>
+        <div className="language-meter">
+          <strong>English</strong>
+          <span>Default for chat, content, and demos</span>
         </div>
+        <div className="bar" aria-label="English default"><span style={{ width: "100%" }} /></div>
       </div>
       <div className="card">
         <h2>Privacy threshold</h2>

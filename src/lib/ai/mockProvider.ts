@@ -67,7 +67,7 @@ export function mockGenerateYouthResponse(message: string, options: { ageBand?: 
       ageBand === "CHILD_10_12"
         ? ["Use a simple example", "What adult can help?", "Quiz me gently", "One safe next step"]
         : ageBand === "OLDER_TEEN_16_18"
-          ? ["Give me a decision aid", "Check the claim", "Help me plan the conversation", "Go deeper"]
+          ? ["Give me a decision aid", "Check the claim", "Help me plan the conversation", "Show next steps"]
           : ["Explain simply", "Quiz me", "Help me talk to an adult", "What should I do next?"],
     recommendedMaterialIds: materials.map((material) => material.id),
     quizSuggestion: { topic, reason: "A short quiz can help resi adapt your next lesson." },

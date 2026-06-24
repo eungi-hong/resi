@@ -22,13 +22,12 @@ Tools used:
 - TypeScript
 - Prisma
 - Hosted Postgres
-- Recharts
 - Zod
-- Mock AI provider with OpenAI-compatible adapter placeholder
+- OpenAI Responses API with local safety/retrieval guardrails
 
 Architecture:
 
-Next.js UI and API routes persist data through Prisma into hosted Postgres. Mock or live AI runs through the provider abstraction. Parent and admin views read summaries and aggregates, not raw youth chat logs.
+Next.js UI and API routes persist data through Prisma into hosted Postgres. Youth chat uses OpenAI through the provider abstraction when `OPENAI_API_KEY` is configured, with deterministic local safety, retrieval, and literacy signals. Parent and admin views read summaries and aggregates, not raw youth chat logs.
 
 Safety architecture:
 
@@ -41,15 +40,17 @@ Safety architecture:
 Mocked vs real:
 
 - Real: database persistence, seed data, chat history, quiz attempts, metrics, alerts, parent insights, admin content/analytics reads.
-- Mocked by default: AI generation and voice.
+- Mocked only when no OpenAI key is configured: AI generation and voice.
 
 Live demo routes:
 
 - `/`
-- `/demo/personalization`
+- `/demo`
 - `/youth`
 - `/youth/chat`
 - `/youth/library`
+- `/youth/library/vaping?ageBand=TEEN_13_15`
+- `/youth/quiz?topic=vaping&ageBand=TEEN_13_15`
 - `/parent`
 - `/parent/asha`
 - `/admin`
@@ -58,9 +59,9 @@ Live demo routes:
 
 Three-minute demo script:
 
-1. Open `/demo/personalization` and switch from Nabil to Asha to Wei Jun.
-2. Open `/youth/chat` and ask about vaping peer pressure.
-3. Refresh chat to show persistence.
-4. Open `/youth/library/vaping` and show age-specific structured learning.
+1. Open `/demo` and use the Judge path.
+2. Click “Ask resi” and ask about vaping peer pressure.
+3. Click “Learn safely” to show the youth dashboard, learning quests, and progress measures.
+4. Open `/youth/library`, apply a filter, then open the vaping module and its topic-specific quiz.
 5. Open `/parent/asha` and show supportive insight without raw transcript.
 6. Open `/admin/analytics` and show aggregate trends with privacy suppression.

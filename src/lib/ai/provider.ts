@@ -1,7 +1,13 @@
+import type { AgeBand, AiResponse, Language } from "@/src/lib/types";
+
 export type AiProvider = {
-  generate(input: string): Promise<string>;
+  generateYouthResponse(input: {
+    message: string;
+    ageBand: AgeBand;
+    language: Language;
+  }): Promise<AiResponse>;
 };
 
-export function isMockMode() {
-  return process.env.NEXT_PUBLIC_MOCK_MODE !== "false" || !process.env.OPENAI_API_KEY;
+export function shouldUseOpenAi() {
+  return process.env.AI_PROVIDER === "openai" && Boolean(process.env.OPENAI_API_KEY);
 }

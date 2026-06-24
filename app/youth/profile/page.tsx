@@ -14,7 +14,7 @@ export default async function ProfilePage() {
           <div style={{ textAlign: "center" }}>
             <Avatar character={character} cue="wave" />
           </div>
-          <label>Language<select className="select" defaultValue={user.languagePreference}><option value="en">English</option><option value="ta">Tamil</option><option value="zh">Mandarin Chinese</option><option value="ms">Malay</option></select></label>
+          <label>Language<select className="select" defaultValue="en"><option value="en">English</option><option value="ta">Tamil</option><option value="zh">Mandarin Chinese</option><option value="ms">Malay</option></select></label>
           <label>Avatar<select className="select" defaultValue={character}><option>See</option><option>Ree</option></select></label>
           <label>Interaction style<select className="select" defaultValue="calm"><option>Calm</option><option>Cheerful</option><option>Direct</option><option>Coach-like</option></select></label>
         </div>

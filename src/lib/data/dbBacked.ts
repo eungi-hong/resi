@@ -11,7 +11,7 @@ function mapUser(user: any): DemoUser {
     role: user.role,
     name: user.name,
     demoUsername: user.demoUsername,
-    languagePreference: user.languagePreference,
+    languagePreference: "en",
     age: youthProfile?.age,
     ageBand: youthProfile?.ageBand,
     avatarId: youthProfile?.avatarId,
@@ -111,7 +111,7 @@ export async function getLearningMaterials(ageBand?: AgeBand, language: Language
     where: {
       ageBand,
       topic,
-      OR: [{ language: String(language) }, { language: "en" }]
+      language: "en"
     },
     orderBy: [{ topic: "asc" }, { ageBand: "asc" }]
   });
@@ -121,7 +121,7 @@ export async function getLearningMaterials(ageBand?: AgeBand, language: Language
 export async function getRecommendedLearningMaterials(userId = "asha") {
   if (!hasDatabaseUrl) return getRecommendedMaterials(userId);
   const user = await getDemoUser(userId, "YOUTH");
-  return getLearningMaterials(user.ageBand ?? "TEEN_13_15", user.languagePreference);
+  return getLearningMaterials(user.ageBand ?? "TEEN_13_15", "en");
 }
 
 export async function getTopicMaterial(topic: string, ageBand: AgeBand, language: Language | string = "en") {

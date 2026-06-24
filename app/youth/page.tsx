@@ -4,22 +4,31 @@ import { MetricCard } from "@/components/MetricCard";
 import YouthShell from "@/components/YouthShell";
 import { ResiAvatar } from "@/components/avatar/ResiAvatar";
 import { aggregateYouthMetrics } from "@/src/lib/ai/healthLiteracyMetrics";
-import { getRecommendedLearningMaterials, getYouthMetrics } from "@/src/lib/data/dbBacked";
+import { getLearningMaterials, getYouthMetrics } from "@/src/lib/data/dbBacked";
 import { getCurrentDemoUser } from "@/src/lib/auth/session";
 import type { AvatarCue } from "@/src/lib/types";
 
 const youthLabels = {
-  FUNCTIONAL: "Understand",
-  INTERACTIVE: "Practise",
-  CRITICAL: "Question"
+  FUNCTIONAL: "Understanding facts",
+  INTERACTIVE: "Using skills in real life",
+  CRITICAL: "Checking claims and pressure"
+} as const;
+
+const youthDescriptions = {
+  FUNCTIONAL: "How confidently you explain key health ideas.",
+  INTERACTIVE: "How confidently you choose safe next steps and ask for help.",
+  CRITICAL: "How confidently you spot weak claims, pressure, and misinformation."
 } as const;
 
 export default async function YouthDashboard() {
   const user = await getCurrentDemoUser("YOUTH");
   const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
   const ageBand = user.ageBand ?? "TEEN_13_15";
-  const metrics = aggregateYouthMetrics(await getYouthMetrics(user.id));
-  const recommended = await getRecommendedLearningMaterials(user.id);
+  const [metricsRows, recommended] = await Promise.all([
+    getYouthMetrics(user.id),
+    getLearningMaterials(ageBand, "en")
+  ]);
+  const metrics = aggregateYouthMetrics(metricsRows);
   const ageText = ageBand === "CHILD_10_12" ? "ages 10-12" : ageBand === "TEEN_13_15" ? "ages 13-15" : "older teens 16-18";
   const heroCopy = ageBand === "CHILD_10_12"
     ? "Let us learn one simple health idea and one safe next step."
@@ -38,7 +47,7 @@ export default async function YouthDashboard() {
             <Link className="button" href="/youth/chat"><MessageCircle size={18} /> Ask resi</Link>
             <Link className="ghost-button" href="/youth/library"><BookOpen size={18} /> Continue a quest</Link>
             <Link className="ghost-button" href="/youth/trusted-adult"><MessagesSquare size={18} /> Practise a conversation</Link>
-            <Link className="ghost-button" href="/youth/quiz"><TimerReset size={18} /> Take a 3-minute quiz</Link>
+            <Link className="ghost-button" href={`/youth/quiz?topic=vaping&ageBand=${ageBand}`}><TimerReset size={18} /> Take a topic quiz</Link>
           </div>
         </div>
         <ResiAvatar character={character} cue="wave" size="xl" />
@@ -72,7 +81,7 @@ export default async function YouthDashboard() {
       </div>
       <div className="grid grid-3">
         {metrics.map((metric, index) => (
-          <MetricCard key={metric.dimension} label={youthLabels[metric.dimension]} value={metric.average} tone={index === 1 ? "blue" : index === 2 ? "gold" : "primary"} />
+          <MetricCard key={metric.dimension} label={youthLabels[metric.dimension]} value={metric.average} description={youthDescriptions[metric.dimension]} tone={index === 1 ? "blue" : index === 2 ? "gold" : "primary"} />
         ))}
       </div>
 

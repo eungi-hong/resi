@@ -7,7 +7,7 @@ import { ResiAvatar } from "@/components/avatar/ResiAvatar";
 import { calculateLiteracyUpdate } from "@/src/lib/ai/healthLiteracyMetrics";
 import type { LiteracyDimension, LiteracyMetric, Quiz } from "@/src/lib/types";
 
-const labelFor = (dimension: LiteracyDimension) => dimension === "FUNCTIONAL" ? "Understand" : dimension === "INTERACTIVE" ? "Practise" : "Question";
+const labelFor = (dimension: LiteracyDimension) => dimension === "FUNCTIONAL" ? "Understanding facts" : dimension === "INTERACTIVE" ? "Using skills" : "Checking claims";
 
 export function QuizClient({ youthUserId, quiz, metrics }: { youthUserId: string; quiz: Quiz; metrics: LiteracyMetric[] }) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -46,7 +46,7 @@ export function QuizClient({ youthUserId, quiz, metrics }: { youthUserId: string
   return (
     <>
       <section className="avatar-scene" style={{ marginBottom: 18 }}>
-        <PageHeader title="3-minute adaptive quiz" kicker="Understand · Practise · Question">Answers update progress slowly so one quiz never defines you.</PageHeader>
+        <PageHeader title={quiz.title} kicker="Topic check-in">A short topic-specific quiz checks facts, real-life choices, source quality, and support planning.</PageHeader>
         <ResiAvatar character="See" cue={complete ? "celebrate" : "quiz"} size="lg" />
       </section>
       <div className="grid">

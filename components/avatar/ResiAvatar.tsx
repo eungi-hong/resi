@@ -7,7 +7,7 @@ export function ResiAvatar({
   character = "See",
   cue = "wave",
   size = "md",
-  showMissingNotice = true
+  showMissingNotice = false
 }: {
   character?: Exclude<AvatarCharacter, "Custom">;
   cue?: AvatarCue;

@@ -21,11 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <span>resi</span>
               </Link>
               <nav className="nav" aria-label="Main navigation">
-                <Link href="/youth">Youth</Link>
-                <Link href="/parent">Parent</Link>
-                <Link href="/admin">Admin</Link>
-                <Link href="/demo/personalization">Demo</Link>
-                <Link href="/login">Login</Link>
+                <Link href="/demo">Demo</Link>
+                <Link href="/api/demo-login?username=asha&next=/youth">Youth</Link>
+                <Link href="/api/demo-login?username=parent&next=/parent">Parent</Link>
+                <Link href="/api/demo-login?username=admin&next=/admin">Admin</Link>
               </nav>
               <DemoRoleSwitcher />
             </div>

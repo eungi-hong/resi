@@ -6,7 +6,7 @@ resi is a youth health literacy AI associate for TheFirst Spark challenge hackat
 
 - MVP age range: 10-18.
 - Demo role-switching auth, not production auth.
-- Mock AI runs by default; no API keys are required.
+- OpenAI runs when `AI_PROVIDER=openai` and `OPENAI_API_KEY` are configured; local mock AI remains as a no-key or provider-error fallback.
 - ElevenLabs voice is optional and disabled unless keys are provided.
 - Mobbin MCP was used for UI research: Gemini/Pi/Alan chat patterns, Bloom/Duolingo learning progression, ClassDojo-style parent progress cards, and Canny/Steep/Mailchimp-style admin analytics.
 - Avatar assets are placeholder SVGs and manifest-driven.
@@ -35,8 +35,8 @@ Copy `.env.example` to `.env.local` and add keys only if enabling live providers
 
 Key defaults:
 
-- `RESI_AI_PROVIDER=mock`
-- `AI_PROVIDER=mock`
+- `AI_PROVIDER=openai`
+- `OPENAI_API_KEY` enables live OpenAI responses
 - `DATABASE_URL` must point to hosted Postgres for Mode B deployment
 - `ELEVENLABS_API_KEY` blank disables ElevenLabs voice.
 
@@ -57,8 +57,8 @@ Required Vercel environment variables:
 - `DIRECT_URL` when the provider requires a direct migration connection
 - `NEXT_PUBLIC_DEMO_MODE=true`
 - `NEXT_PUBLIC_SHOW_DEMO_ROLE_SWITCHER=true`
-- `AI_PROVIDER=mock`
-- `NEXT_PUBLIC_ENABLE_MOCK_AI=true`
+- `AI_PROVIDER=openai`
+- `NEXT_PUBLIC_ENABLE_MOCK_AI=false`
 - `DEMO_SEED_SECRET`
 - optional `OPENAI_API_KEY`
 - optional `ELEVENLABS_API_KEY`
@@ -105,7 +105,8 @@ Direct demo routes:
 - Parent: `/parent`
 - Admin: `/admin`
 - Demo: `/demo`
-- Personalization demo: `/demo/personalization`
+- Judge path: `/demo`
+- Optional personalization demo: `/demo/personalization`
 
 ## Features
 
@@ -113,7 +114,7 @@ Direct demo routes:
 - Youth portal with dashboard, chat, learning library, quiz, progress, profile, resources, and trusted-adult scripts.
 - Parent portal with linked youth summaries, risk alerts, and conversation guides.
 - Admin portal with aggregate analytics, content management, risk trends, and privacy settings.
-- Mock AI pipeline with topic detection, retrieval, risk scoring, structured response metadata, and Nutbeam literacy signals.
+- OpenAI-backed youth chat with local topic detection, retrieval, risk scoring, structured response metadata, and Nutbeam literacy signals.
 - Avatar manifest in `src/data/avatarManifest.ts`.
 - Prisma schema for future SQLite/PostgreSQL persistence.
 
@@ -135,7 +136,7 @@ resi is educational and does not provide diagnosis, therapy, emergency response,
 
 - Wire Prisma Client persistence.
 - Add real auth and consent flows.
-- Connect OpenAI-compatible provider and reviewed RAG content.
+- Add reviewed Singapore source links and deeper RAG content.
 - Add reviewed Singapore source links and complete translations.
 - Add ElevenLabs API route for avatar voice.
 - Add admin avatar upload/registration workflow.

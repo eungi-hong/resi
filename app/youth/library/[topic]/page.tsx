@@ -12,7 +12,7 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
   const user = await getCurrentDemoUser("YOUTH");
   const ageBand = query?.ageBand ?? user.ageBand ?? "TEEN_13_15";
   const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
-  const material = await getTopicMaterial(topic, ageBand, user.languagePreference);
+  const material = await getTopicMaterial(topic, ageBand, "en");
   return (
     <YouthShell>
       <section className="avatar-scene">
@@ -22,7 +22,7 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
           </PageHeader>
           <div className="chip-row">
             <Link className="button" href="/youth/chat">Ask resi about this</Link>
-            <Link className="ghost-button" href="/youth/quiz">Start quiz</Link>
+            <Link className="ghost-button" href={`/youth/quiz?topic=${material.topic}&ageBand=${ageBand}`}>Start quiz</Link>
             <Link className="ghost-button" href={`/youth/library/${topic}?ageBand=${ageBand === "OLDER_TEEN_16_18" ? "TEEN_13_15" : "OLDER_TEEN_16_18"}`}>Preview another age version</Link>
           </div>
         </div>
@@ -43,17 +43,17 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
 
       <div className="learning-tabs" style={{ marginTop: 18 }}>
         {[
-          ["Quick explainer", material.quickExplainer],
-          ["Scenario", material.scenario],
-          ["Skills practice", material.practiceActivity?.join(" · ")],
-          ["Myth check", `Myth: ${material.mythCheck?.myth} Reality: ${material.mythCheck?.reality}`],
-          ["Talk to a trusted adult", material.trustedAdultScript],
-          ["Quiz", "Try three short questions that update your Understand, Practise, and Question progress measures."]
+          ["Learn the core idea", material.quickExplainer],
+          ["Try a realistic situation", material.scenario],
+          ["Choose words you can use", material.practiceActivity?.join(" · ")],
+          ["Check a common myth", `Myth: ${material.mythCheck?.myth} Reality: ${material.mythCheck?.reality}`],
+          ["Prepare support", material.trustedAdultScript],
+          ["Check your understanding", "Take a topic-specific quiz with factual, scenario, source-checking, and trusted-adult questions."]
         ].map(([title, body]) => (
           <section className="card" key={title}>
             <span className="badge">{title}</span>
             <p>{body}</p>
-            {title === "Quick explainer" ? <div className="chip-row"><button className="ghost-button">Explain simpler</button><button className="ghost-button">Go deeper</button></div> : null}
+            {title === "Check your understanding" ? <Link className="button" href={`/youth/quiz?topic=${material.topic}&ageBand=${ageBand}`}>Start topic quiz</Link> : null}
           </section>
         ))}
       </div>

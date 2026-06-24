@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BookOpen, MessageSquare, Send, ShieldCheck, Sparkles, Volume2 } from "lucide-react";
 import { ResiAvatar } from "@/components/avatar/ResiAvatar";
-import { educationMaterials } from "@/src/data/demoData";
-import type { AgeBand, AiResponse, AvatarCue, DemoUser, Language } from "@/src/lib/types";
+import type { AgeBand, AiResponse, AvatarCue, DemoUser, EducationMaterial, Language } from "@/src/lib/types";
 import { speakWithBrowser } from "@/src/lib/voice/mockVoice";
 
 type ChatMessage = { sender: "user" | "assistant"; content: string; cue?: AvatarCue; meta?: AiResponse };
@@ -21,7 +20,7 @@ const demoPrompts = [
 const quickRepliesByAge: Record<AgeBand, string[]> = {
   CHILD_10_12: ["Explain with an example", "Help me ask an adult", "Quiz me gently", "Show one safe next step"],
   TEEN_13_15: ["Explain simply", "Quiz me", "Help me talk to an adult", "What should I do next?"],
-  OLDER_TEEN_16_18: ["Give me a decision aid", "Check the claim", "Help me plan the conversation", "Go deeper"]
+  OLDER_TEEN_16_18: ["Give me a decision aid", "Check the claim", "Help me plan the conversation", "Show next steps"]
 };
 
 const starter: ChatMessage = {
@@ -30,39 +29,63 @@ const starter: ChatMessage = {
   cue: "wave"
 };
 
-export function ChatClient({ user, initialMessages = [], initialConversationId }: { user: DemoUser; initialMessages?: ChatMessage[]; initialConversationId?: string }) {
+export function ChatClient({
+  user,
+  initialMessages = [],
+  initialConversationId,
+  recommendationPool = []
+}: {
+  user: DemoUser;
+  initialMessages?: ChatMessage[];
+  initialConversationId?: string;
+  recommendationPool?: Pick<EducationMaterial, "id" | "title" | "summary">[];
+}) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages.length ? initialMessages : [starter]);
   const [input, setInput] = useState("");
-  const [language, setLanguage] = useState<Language>(user.languagePreference);
+  const [language, setLanguage] = useState<Language>("en");
   const [cue, setCue] = useState<AvatarCue>("wave");
   const [conversationId, setConversationId] = useState(initialConversationId);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
   const logRef = useRef<HTMLDivElement>(null);
   const ageBand = user.ageBand ?? "TEEN_13_15";
   const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
   const lastMeta = [...messages].reverse().find((message) => message.meta)?.meta;
   const recommendations = useMemo(
-    () => educationMaterials.filter((material) => lastMeta?.recommendedMaterialIds.includes(material.id)),
-    [lastMeta]
+    () => recommendationPool.filter((material) => lastMeta?.recommendedMaterialIds.includes(material.id)),
+    [lastMeta, recommendationPool]
   );
 
   useEffect(() => {
-    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+    const frame = requestAnimationFrame(() => {
+      if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+    });
+    return () => cancelAnimationFrame(frame);
   }, [messages]);
 
   async function sendMessage(text = input) {
     const clean = text.trim();
-    if (!clean) return;
+    if (!clean || sending) return;
     setInput("");
+    setError("");
+    setSending(true);
     setMessages((current) => [...current, { sender: "user", content: clean }]);
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: clean, language, ageBand, youthUserId: user.id, conversationId })
-    });
-    const meta = (await res.json()) as AiResponse & { conversationId?: string };
-    if (meta.conversationId) setConversationId(meta.conversationId);
-    setCue(meta.avatarCue);
-    setMessages((current) => [...current, { sender: "assistant", content: meta.response, cue: meta.avatarCue, meta }]);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: clean, language, ageBand, youthUserId: user.id, conversationId })
+      });
+      if (!res.ok) throw new Error("Chat request failed.");
+      const meta = (await res.json()) as AiResponse & { conversationId?: string };
+      if (meta.conversationId) setConversationId(meta.conversationId);
+      setCue(meta.avatarCue);
+      setMessages((current) => [...current, { sender: "assistant", content: meta.response, cue: meta.avatarCue, meta }]);
+    } catch {
+      setError("resi could not answer just now. Please try one of the demo prompts again.");
+    } finally {
+      setSending(false);
+    }
   }
 
   const quickReplies = lastMeta?.suggestedQuickReplies?.length ? lastMeta.suggestedQuickReplies : quickRepliesByAge[ageBand];
@@ -74,7 +97,7 @@ export function ChatClient({ user, initialMessages = [], initialConversationId }
         <div>
           <span className="badge">Personalized for {ageBand === "CHILD_10_12" ? "ages 10-12" : ageBand === "TEEN_13_15" ? "ages 13-15" : "older teens"}</span>
           <h2>{user.name}&apos;s resi space</h2>
-          <p className="muted">Language: {language.toUpperCase()} · Learning level: {ageBand === "CHILD_10_12" ? "simple guidance" : ageBand === "TEEN_13_15" ? "scenario practice" : "decision support"}</p>
+        <p className="muted">Language: English · Learning level: {ageBand === "CHILD_10_12" ? "simple guidance" : ageBand === "TEEN_13_15" ? "scenario practice" : "decision support"}</p>
         </div>
         <div className="grid">
           {[
@@ -83,7 +106,7 @@ export function ChatClient({ user, initialMessages = [], initialConversationId }
             ["Help me talk to an adult", MessageSquare],
             ["Show resources", ShieldCheck]
           ].map(([label, Icon]) => (
-            <button className="ghost-button" key={String(label)} onClick={() => sendMessage(String(label))}>
+            <button className="ghost-button" key={String(label)} onClick={() => sendMessage(String(label))} disabled={sending}>
               <Icon size={17} /> {String(label)}
             </button>
           ))}
@@ -127,7 +150,7 @@ export function ChatClient({ user, initialMessages = [], initialConversationId }
         <div className="chat-composer">
           <div className="chip-row">
             {quickReplies.map((prompt) => (
-              <button className="chip" key={prompt} type="button" onClick={() => sendMessage(prompt)}>{prompt}</button>
+              <button className="chip" key={prompt} type="button" onClick={() => sendMessage(prompt)} disabled={sending}>{prompt}</button>
             ))}
           </div>
           <form
@@ -138,8 +161,9 @@ export function ChatClient({ user, initialMessages = [], initialConversationId }
             }}
           >
             <input className="input" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask resi a health question..." />
-            <button className="button" type="submit"><Send size={18} /> Send</button>
+            <button className="button" type="submit" disabled={sending}><Send size={18} /> {sending ? "Sending..." : "Send"}</button>
           </form>
+          {error ? <p className="form-status badge warn" role="status">{error}</p> : null}
         </div>
       </section>
 
@@ -147,7 +171,7 @@ export function ChatClient({ user, initialMessages = [], initialConversationId }
         <div className="card subtle">
           <h3>Try a demo prompt</h3>
           <div className="grid">
-            {demoPrompts.map((prompt) => <button className="chip" key={prompt} onClick={() => sendMessage(prompt)}>{prompt}</button>)}
+            {demoPrompts.map((prompt) => <button className="chip" key={prompt} onClick={() => sendMessage(prompt)} disabled={sending}>{prompt}</button>)}
           </div>
         </div>
         <div className="card">

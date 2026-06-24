@@ -18,8 +18,18 @@ const contentSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (!hasDatabaseUrl) return NextResponse.json({ persisted: false, error: "DATABASE_URL not configured" }, { status: 503 });
   const body = contentSchema.parse(await request.json());
+  if (!hasDatabaseUrl) {
+    return NextResponse.json({
+      persisted: false,
+      demo: true,
+      material: {
+        id: body.id ?? `demo-material-${Date.now()}`,
+        sourceStatus: body.reviewStatus === "REVIEWED" ? "OFFICIAL_REVIEWED" : "SAMPLE",
+        ...body
+      }
+    });
+  }
   const id = body.id ?? `material-${body.topic}-${body.ageBand}-${body.language}-${Date.now()}`;
   const material = await prisma.educationMaterial.upsert({
     where: { id },

@@ -13,6 +13,8 @@
 - Send “Is vaping actually that bad if everyone does it?”
 - Refresh `/youth/chat` and confirm messages remain.
 - `/youth/library` shows DB learning modules.
+- Library search and filters return expected modules.
+- Topic pages link to topic-specific quizzes.
 - Quiz attempt persists and progress updates.
 - `/parent` loads directly.
 - `/parent/asha` shows parent insight and support alert.

@@ -8,7 +8,7 @@ export default function PersonalizationDemoPage() {
   return (
     <main className="page">
       <div className="app-container">
-        <PageHeader title="Personalization demo" kicker="Dev/demo controls">Switch profiles to see age band, language, avatar, recommendations, and chat style change.</PageHeader>
+        <PageHeader title="Personalization demo" kicker="Dev/demo controls">Switch profiles to see age band, avatar, recommendations, and chat style change.</PageHeader>
         <div className="grid grid-4">
           {users.map((user) => {
             const character = user.avatarId?.startsWith("ree") ? "Ree" : "See";
@@ -16,7 +16,7 @@ export default function PersonalizationDemoPage() {
             return (
               <article className="card" key={user.id}>
                 <ResiAvatar character={character} cue="wave" size="md" />
-                <span className="badge">{user.age} years old · {user.languagePreference.toUpperCase()}</span>
+                <span className="badge">{user.age} years old · English</span>
                 <h2>{user.name}</h2>
                 <p className="muted">{user.ageBand?.replaceAll("_", " ").toLowerCase()}</p>
                 <p><strong>Sample chat style:</strong> {user.ageBand === "CHILD_10_12" ? "simple examples and stronger adult nudges" : user.ageBand === "TEEN_13_15" ? "scenario practice and autonomy" : "decision aids and misinformation checks"}</p>

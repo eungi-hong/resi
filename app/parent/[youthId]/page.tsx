@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AcknowledgeAlertButton } from "@/components/AcknowledgeAlertButton";
 import { MetricCard } from "@/components/MetricCard";
 import { PageHeader } from "@/components/PageHeader";
 import ParentShell from "@/components/ParentShell";
@@ -44,7 +45,7 @@ export default async function YouthInsightPage({ params }: { params: Promise<{ y
           <span className="badge warn">{alert.severity}</span>
           <h2>{alert.title}</h2>
           <p className="muted">{alert.summary}</p>
-          <button className="ghost-button" type="button">Acknowledge demo alert</button>
+          <AcknowledgeAlertButton alertId={alert.id} initialStatus={alert.status} />
         </div>
       ))}
     </ParentShell>

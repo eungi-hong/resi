@@ -1,9 +1,9 @@
 import type { Alert, AgeBand, DemoUser, EducationMaterial, LiteracyDimension, LiteracyMetric, Quiz } from "@/src/lib/types";
 
 export const demoUsers: DemoUser[] = [
-  { id: "asha", role: "YOUTH", name: "Asha", demoUsername: "asha", languagePreference: "ta", age: 13, ageBand: "TEEN_13_15", avatarId: "see_wave" },
-  { id: "weijun", role: "YOUTH", name: "Wei Jun", demoUsername: "weijun", languagePreference: "zh", age: 16, ageBand: "OLDER_TEEN_16_18", avatarId: "ree_idle" },
-  { id: "nabil", role: "YOUTH", name: "Nabil", demoUsername: "nabil", languagePreference: "ms", age: 12, ageBand: "CHILD_10_12", avatarId: "ree_wave" },
+  { id: "asha", role: "YOUTH", name: "Asha", demoUsername: "asha", languagePreference: "en", age: 13, ageBand: "TEEN_13_15", avatarId: "see_wave" },
+  { id: "weijun", role: "YOUTH", name: "Wei Jun", demoUsername: "weijun", languagePreference: "en", age: 16, ageBand: "OLDER_TEEN_16_18", avatarId: "ree_idle" },
+  { id: "nabil", role: "YOUTH", name: "Nabil", demoUsername: "nabil", languagePreference: "en", age: 12, ageBand: "CHILD_10_12", avatarId: "ree_wave" },
   { id: "priya", role: "YOUTH", name: "Priya", demoUsername: "priya", languagePreference: "en", age: 17, ageBand: "OLDER_TEEN_16_18", avatarId: "see_idle" },
   { id: "parent-as", role: "PARENT", name: "Mrs Kumar", demoUsername: "parent", languagePreference: "en", linkedYouthIds: ["asha", "nabil"] },
   { id: "admin", role: "ADMIN", name: "MOH Demo Admin", demoUsername: "admin", languagePreference: "en" }
@@ -162,39 +162,184 @@ export const educationMaterials: EducationMaterial[] = baseTopics.flatMap((base)
   })
 );
 
+function topicQuizQuestions(material: EducationMaterial): Quiz["questions"] {
+  const adultOption = material.ageBand === "CHILD_10_12" ? "Ask a trusted adult to think it through with you" : "Ask a trusted person or compare with a reliable source";
+  const shared = [
+    {
+      id: `${material.id}-q-support`,
+      prompt: "What is the safest first step if you feel unsure?",
+      options: ["Keep it secret", adultOption, "Copy what friends or influencers do"],
+      answerIndex: 1,
+      dimension: "INTERACTIVE" as const,
+      explanation: "Trusted support helps you use health information in a real situation."
+    },
+    {
+      id: `${material.id}-q-source`,
+      prompt: "Which is a warning sign that a health claim may be unreliable?",
+      options: ["It explains limits clearly", "It uses miracle-cure language", "It suggests checking with a professional"],
+      answerIndex: 1,
+      dimension: "CRITICAL" as const,
+      explanation: "Miracle claims often skip evidence, tradeoffs, and safety limits."
+    }
+  ];
+
+  const byTopic: Record<string, Quiz["questions"]> = {
+    vaping: [
+      {
+        id: `${material.id}-q-fact`,
+        prompt: "Why can vaping be risky even when a flavour sounds harmless?",
+        options: ["Flavour proves it is safe", "It can still involve nicotine, chemicals, and habit-forming use", "Only adults can be affected"],
+        answerIndex: 1,
+        dimension: "FUNCTIONAL",
+        explanation: "Flavour can make vaping feel less serious, but it does not prove safety."
+      },
+      {
+        id: `${material.id}-q-scenario`,
+        prompt: "A friend says, 'Just try once.' Which reply keeps the boundary low-drama?",
+        options: ["No thanks, I am good", "Everyone who vapes is bad", "I will do it if nobody finds out"],
+        answerIndex: 0,
+        dimension: "INTERACTIVE",
+        explanation: "A short, calm line is easier to use when pressure is happening."
+      },
+      ...shared
+    ],
+    diabetes: [
+      {
+        id: `${material.id}-q-fact`,
+        prompt: "What is the point of learning about diabetes when you are young?",
+        options: ["To blame bodies", "To notice habits that can support future health", "To follow extreme diet rules"],
+        answerIndex: 1,
+        dimension: "FUNCTIONAL",
+        explanation: "The goal is practical prevention without shame or extreme rules."
+      },
+      {
+        id: `${material.id}-q-scenario`,
+        prompt: "Which small step best matches this module?",
+        options: ["Skip meals to be healthy", "Try one drink swap or short walk after a meal", "Ignore sleep and stress"],
+        answerIndex: 1,
+        dimension: "INTERACTIVE",
+        explanation: "Small sustainable actions are more useful than all-or-nothing rules."
+      },
+      ...shared
+    ],
+    "screen-time": [
+      {
+        id: `${material.id}-q-fact`,
+        prompt: "Why can late scrolling affect the next day?",
+        options: ["Sleep quality can affect mood, attention, and stress", "Screens never affect rest", "Only games affect sleep"],
+        answerIndex: 0,
+        dimension: "FUNCTIONAL",
+        explanation: "Even when you wake up on time, sleep quality can still matter."
+      },
+      {
+        id: `${material.id}-q-scenario`,
+        prompt: "Which boundary is most realistic to test first?",
+        options: ["Never use a phone again", "Use a last-video timer tonight", "Hide the problem from everyone"],
+        answerIndex: 1,
+        dimension: "INTERACTIVE",
+        explanation: "A small test gives you evidence about what works."
+      },
+      ...shared
+    ],
+    "mental-health": [
+      {
+        id: `${material.id}-q-fact`,
+        prompt: "Why should online mental-health labels be handled carefully?",
+        options: ["A post can start reflection, but it cannot diagnose you", "Every video is a diagnosis", "Feelings should be ignored"],
+        answerIndex: 0,
+        dimension: "FUNCTIONAL",
+        explanation: "Diagnosis needs a qualified person and your real-life context."
+      },
+      {
+        id: `${material.id}-q-scenario`,
+        prompt: "A video describes anxiety and it sounds familiar. What is a strong next step?",
+        options: ["Panic and self-diagnose immediately", "Track what happens and ask a trusted adult or counsellor", "Never talk about it"],
+        answerIndex: 1,
+        dimension: "INTERACTIVE",
+        explanation: "Tracking patterns and asking for support turns a worry into a clearer conversation."
+      },
+      ...shared
+    ],
+    "sleep-stress": [
+      {
+        id: `${material.id}-q-fact`,
+        prompt: "What can make sleep harder besides discipline?",
+        options: ["Only laziness", "Routines, worry, light, caffeine, and stress", "Nothing affects sleep"],
+        answerIndex: 1,
+        dimension: "FUNCTIONAL",
+        explanation: "Sleep is shaped by routines and stress signals, not just willpower."
+      },
+      {
+        id: `${material.id}-q-scenario`,
+        prompt: "Your mind keeps replaying tomorrow's tasks. What is a useful reset?",
+        options: ["Scroll until you forget", "Write a two-minute worry list", "Start a hard conversation at midnight"],
+        answerIndex: 1,
+        dimension: "INTERACTIVE",
+        explanation: "A short worry list can move tasks out of your head and into a plan."
+      },
+      ...shared
+    ],
+    "nutrition-movement": [
+      {
+        id: `${material.id}-q-fact`,
+        prompt: "What is this module trying to avoid?",
+        options: ["Body shaming and extreme rules", "Energy and mood", "Enjoying favourite foods"],
+        answerIndex: 0,
+        dimension: "FUNCTIONAL",
+        explanation: "Health learning should support energy, strength, and mood without shame."
+      },
+      {
+        id: `${material.id}-q-scenario`,
+        prompt: "Which next step is most sustainable?",
+        options: ["Ban every favourite food", "Notice how different snacks affect focus", "Exercise as punishment"],
+        answerIndex: 1,
+        dimension: "INTERACTIVE",
+        explanation: "Noticing patterns helps you choose what supports your day."
+      },
+      ...shared
+    ],
+    misinformation: [
+      {
+        id: `${material.id}-q-fact`,
+        prompt: "What matters more than a post being popular?",
+        options: ["Evidence and source quality", "How confident the influencer sounds", "How many people share it"],
+        answerIndex: 0,
+        dimension: "CRITICAL",
+        explanation: "Popularity can spread mistakes quickly; evidence matters more."
+      },
+      {
+        id: `${material.id}-q-scenario`,
+        prompt: "An influencer says one supplement fixes stress, skin, sleep, and weight. What should you do first?",
+        options: ["Buy it before it sells out", "Check the source and look for evidence", "Share it with friends immediately"],
+        answerIndex: 1,
+        dimension: "CRITICAL",
+        explanation: "Big multi-problem claims deserve careful checking before acting or sharing."
+      },
+      ...shared
+    ]
+  };
+
+  return [
+    ...(byTopic[material.topic] ?? shared),
+    {
+      id: `${material.id}-q-diagnosis`,
+      prompt: "Why does resi avoid diagnosing or prescribing treatment?",
+      options: ["Diagnosis and treatment need a qualified professional", "Symptoms never matter", "Questions are not allowed"],
+      answerIndex: 0,
+      dimension: "FUNCTIONAL",
+      explanation: "Health learning can guide questions and next steps, but it is not clinical care."
+    }
+  ];
+}
+
 export const quizzes: Quiz[] = educationMaterials.map((material) => ({
   id: `${material.id}-quiz`,
   topic: material.topic,
   ageBand: material.ageBand,
   language: material.language,
-  title: `${material.title} quiz`,
+  title: `${material.title.split(":")[0]} check-in`,
   literacyDimension: material.literacyDimension,
-  questions: [
-    {
-      id: `${material.id}-q1`,
-      prompt: material.ageBand === "CHILD_10_12" ? "What is the safest first step if you feel unsure?" : "What is a strong first step when you feel unsure about a health choice?",
-      options: ["Keep it secret", "Ask a trusted person or check a reliable source", "Copy what friends do"],
-      answerIndex: 1,
-      dimension: "INTERACTIVE",
-      explanation: material.ageBand === "CHILD_10_12" ? "A safe adult can help you think clearly." : "Trusted support helps you apply health information safely."
-    },
-    {
-      id: `${material.id}-q2`,
-      prompt: "Which is a misinformation red flag?",
-      options: ["Clear source links", "Miracle cure language", "Saying to ask a professional"],
-      answerIndex: 1,
-      dimension: "CRITICAL",
-      explanation: "Miracle claims often skip real evidence."
-    },
-    {
-      id: `${material.id}-q3`,
-      prompt: "Why does resi avoid diagnosing you?",
-      options: ["Diagnosis needs a qualified professional", "Symptoms never matter", "Questions are not allowed"],
-      answerIndex: 0,
-      dimension: "FUNCTIONAL",
-      explanation: "Health learning is different from clinical diagnosis."
-    }
-  ]
+  questions: topicQuizQuestions(material)
 }));
 
 export const initialMetrics: Record<string, LiteracyMetric[]> = {
@@ -270,10 +415,10 @@ export function getUser(id = "asha") {
 
 export function getMaterialsFor(ageBand: string, language = "en", topic?: string) {
   const filtered = educationMaterials.filter((material) => material.ageBand === ageBand && (!topic || material.topic === topic));
-  return filtered.filter((material) => material.language === language || material.language === "en");
+  return filtered.filter((material) => material.language === "en" || material.language === language);
 }
 
 export function getRecommendedMaterials(userId = "asha") {
   const user = getUser(userId);
-  return getMaterialsFor(user.ageBand ?? "TEEN_13_15", user.languagePreference).slice(0, 4);
+  return getMaterialsFor(user.ageBand ?? "TEEN_13_15", "en").slice(0, 4);
 }
