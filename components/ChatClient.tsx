@@ -88,6 +88,30 @@ export function ChatClient({
     }
   }
 
+  function handleQuickAction(label: string) {
+    if (sending) return;
+    const intent = label.toLowerCase();
+    // "Explain simply" / "Quiz me" are follow-ups on the last answer. The mock
+    // provider is stateless, so synthesize these locally from the last meta
+    // instead of sending the bare label (which hits the generic fallback).
+    if (lastMeta && (intent.includes("explain") || intent.includes("quiz"))) {
+      const isQuiz = intent.includes("quiz");
+      const topic = lastMeta.detectedTopics?.[0]?.replace(/-/g, " ");
+      const reply = isQuiz
+        ? `Quick quiz${topic ? ` on ${topic}` : ""}: ${lastMeta.teachBackQuestion} Take your time — there is no wrong answer here.`
+        : `Here is the simpler version: ${lastMeta.simplifiedSummary}`;
+      const nextCue: AvatarCue = isQuiz ? "thinking" : "explaining";
+      setCue(nextCue);
+      setMessages((current) => [
+        ...current,
+        { sender: "user", content: label },
+        { sender: "assistant", content: reply, cue: nextCue }
+      ]);
+      return;
+    }
+    void sendMessage(label);
+  }
+
   const quickReplies = lastMeta?.suggestedQuickReplies?.length ? lastMeta.suggestedQuickReplies : quickRepliesByAge[ageBand];
 
   return (
@@ -106,7 +130,7 @@ export function ChatClient({
             ["Help me talk to an adult", MessageSquare],
             ["Show resources", ShieldCheck]
           ].map(([label, Icon]) => (
-            <button className="ghost-button" key={String(label)} onClick={() => sendMessage(String(label))} disabled={sending}>
+            <button className="ghost-button" key={String(label)} onClick={() => handleQuickAction(String(label))} disabled={sending}>
               <Icon size={17} /> {String(label)}
             </button>
           ))}
@@ -150,7 +174,7 @@ export function ChatClient({
         <div className="chat-composer">
           <div className="chip-row">
             {quickReplies.map((prompt) => (
-              <button className="chip" key={prompt} type="button" onClick={() => sendMessage(prompt)} disabled={sending}>{prompt}</button>
+              <button className="chip" key={prompt} type="button" onClick={() => handleQuickAction(prompt)} disabled={sending}>{prompt}</button>
             ))}
           </div>
           <form
