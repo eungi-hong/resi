@@ -4,6 +4,9 @@ import { runAndPersistYouthChat } from "@/src/lib/data/chatPersistence";
 import type { AgeBand, Language } from "@/src/lib/types";
 
 export const runtime = "nodejs";
+// OpenAI structured output (~7s) plus DB persistence can exceed the default
+// serverless limit; give the function room so it isn't killed mid-call.
+export const maxDuration = 30;
 
 const chatSchema = z.object({
   message: z.string().min(1).max(2000),

@@ -39,9 +39,10 @@ function cueForRisk(severity: AiResponse["riskAssessment"]["severity"], fallback
 
 function openAiTimeoutMs() {
   const configured = Number(process.env.OPENAI_TIMEOUT_MS);
-  // Default high enough that gpt-4.1-mini structured output completes instead
-  // of aborting and silently falling back to the mock provider.
-  return Number.isFinite(configured) && configured > 0 ? configured : 9000;
+  // gpt-4.1-mini structured output measures ~7s; default well above that (plus
+  // cold-start/DB headroom) so the call completes instead of aborting and
+  // silently falling back to the mock provider.
+  return Number.isFinite(configured) && configured > 0 ? configured : 20000;
 }
 
 export const openaiProvider: AiProvider = {

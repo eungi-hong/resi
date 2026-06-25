@@ -142,7 +142,7 @@ Copy `.env.example` to `.env.local` and configure the providers you need.
 | `RESI_USE_DATABASE=true` | Opt into DB-backed reads/writes (leave unset for seeded demo mode) |
 | `AI_PROVIDER=openai` | Enables OpenAI provider when API key is present |
 | `OPENAI_API_KEY` | Optional for local dev — local fallback works without it |
-| `OPENAI_TIMEOUT_MS=9000` | Falls back to local path if provider is slow |
+| `OPENAI_TIMEOUT_MS=20000` | Falls back to local path if provider is slow |
 | `NEXT_PUBLIC_DEMO_MODE=true` | Enables demo role switching |
 | `NEXT_PUBLIC_SHOW_DEMO_ROLE_SWITCHER=true` | Shows quick portal switching controls |
 | `DEMO_SEED_SECRET` | Protects the seed endpoint in deployment |
