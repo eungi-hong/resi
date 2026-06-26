@@ -69,12 +69,18 @@ export function ChatClient({
     setInput("");
     setError("");
     setSending(true);
+    // Send recent turns so resi can answer follow-ups in context. Drop the
+    // canned greeting and cap length to keep latency and tokens reasonable.
+    const history = messages
+      .filter((message) => message.content && message.content !== starter.content)
+      .slice(-10)
+      .map((message) => ({ role: message.sender, content: message.content }));
     setMessages((current) => [...current, { sender: "user", content: clean }]);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: clean, language, ageBand, youthUserId: user.id, conversationId })
+        body: JSON.stringify({ message: clean, language, ageBand, youthUserId: user.id, conversationId, history })
       });
       if (!res.ok) throw new Error("Chat request failed.");
       const meta = (await res.json()) as AiResponse & { conversationId?: string };
@@ -91,21 +97,21 @@ export function ChatClient({
   function handleQuickAction(label: string) {
     if (sending) return;
     const intent = label.toLowerCase();
-    // "Explain simply" / "Quiz me" are follow-ups on the last answer. The mock
-    // provider is stateless, so synthesize these locally from the last meta
-    // instead of sending the bare label (which hits the generic fallback).
-    if (lastMeta && (intent.includes("explain") || intent.includes("quiz"))) {
-      const isQuiz = intent.includes("quiz");
-      const topic = lastMeta.detectedTopics?.[0]?.replace(/-/g, " ");
-      const reply = isQuiz
-        ? `Quick quiz${topic ? ` on ${topic}` : ""}: ${lastMeta.teachBackQuestion} Take your time — there is no wrong answer here.`
-        : `Here is the simpler version: ${lastMeta.simplifiedSummary}`;
-      const nextCue: AvatarCue = isQuiz ? "thinking" : "explaining";
-      setCue(nextCue);
+    const isFollowUp = intent.includes("explain") || intent.includes("quiz");
+    // "Explain simply" / "Quiz me" act on the previous answer. Until the youth
+    // has actually asked something, there is nothing to act on — nudge instead
+    // of sending a context-free message that produces an unrelated reply.
+    if (isFollowUp && !lastMeta) {
+      setCue("wave");
       setMessages((current) => [
         ...current,
         { sender: "user", content: label },
-        { sender: "assistant", content: reply, cue: nextCue }
+        {
+          sender: "assistant",
+          content:
+            "Ask me a health question first — about vaping, stress, sleep, screen time, food, exercise, or talking to a trusted adult — then I can explain it simply or quiz you on it.",
+          cue: "wave"
+        }
       ]);
       return;
     }

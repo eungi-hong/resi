@@ -1,10 +1,13 @@
 import type { AgeBand, AiResponse, Language } from "@/src/lib/types";
 
+export type ChatTurn = { role: "user" | "assistant"; content: string };
+
 export type AiProvider = {
   generateYouthResponse(input: {
     message: string;
     ageBand: AgeBand;
     language: Language;
+    history?: ChatTurn[];
   }): Promise<AiResponse>;
 };
 

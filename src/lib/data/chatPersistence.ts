@@ -1,4 +1,5 @@
 import type { AiResponse, AgeBand, Language } from "@/src/lib/types";
+import type { ChatTurn } from "@/src/lib/ai/provider";
 import { runResiYouthPipeline } from "@/src/lib/ai/orchestrator";
 import { calculateLiteracyUpdate } from "@/src/lib/ai/healthLiteracyMetrics";
 import { shouldCreateParentAlert } from "@/src/lib/ai/risk";
@@ -22,8 +23,13 @@ export async function runAndPersistYouthChat(input: {
   language: Language;
   ageBand: AgeBand;
   conversationId?: string;
+  history?: ChatTurn[];
 }) {
-  const response = await runResiYouthPipeline(input.message, { ageBand: input.ageBand, language: input.language });
+  const response = await runResiYouthPipeline(input.message, {
+    ageBand: input.ageBand,
+    language: input.language,
+    history: input.history
+  });
   if (!hasDatabaseUrl) return { ...response, conversationId: input.conversationId };
 
   const conversation = input.conversationId

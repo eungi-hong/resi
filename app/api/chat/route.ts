@@ -13,7 +13,11 @@ const chatSchema = z.object({
   youthUserId: z.string().default("asha"),
   conversationId: z.string().optional(),
   ageBand: z.enum(["CHILD_10_12", "TEEN_13_15", "OLDER_TEEN_16_18"]).default("TEEN_13_15"),
-  language: z.enum(["en", "zh", "ms", "ta"]).default("en")
+  language: z.enum(["en", "zh", "ms", "ta"]).default("en"),
+  history: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(2000) }))
+    .max(20)
+    .optional()
 });
 
 export async function POST(request: Request) {
@@ -23,7 +27,8 @@ export async function POST(request: Request) {
     conversationId: body.conversationId,
     message: body.message,
     ageBand: body.ageBand as AgeBand,
-    language: body.language as Language
+    language: body.language as Language,
+    history: body.history
   });
   return NextResponse.json(response);
 }

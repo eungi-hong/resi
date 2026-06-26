@@ -46,7 +46,7 @@ function openAiTimeoutMs() {
 }
 
 export const openaiProvider: AiProvider = {
-  async generateYouthResponse({ message, ageBand, language }) {
+  async generateYouthResponse({ message, ageBand, language, history = [] }) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) throw new Error("OPENAI_API_KEY is required when AI_PROVIDER=openai.");
 
@@ -58,6 +58,13 @@ export const openaiProvider: AiProvider = {
     const baseUrl = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), openAiTimeoutMs());
+
+    // Carry recent conversation turns so follow-ups ("explain that", "what about
+    // for girls?", "quiz me") resolve against what was already said.
+    const priorTurns = history
+      .filter((turn) => turn.content?.trim())
+      .slice(-10)
+      .map((turn) => ({ role: turn.role, content: turn.content }));
 
     try {
       const response = await fetch(`${baseUrl}/responses`, {
@@ -89,22 +96,28 @@ Return only a JSON object matching this TypeScript shape:
 }
 
 Use the supplied deterministic safety and retrieval context exactly. Do not diagnose, prescribe treatment, give medication dosing, or replace emergency/clinical support. Keep response under 130 words.`,
-          input: JSON.stringify({
-            youthMessage: message,
-            ageBand,
-            language,
-            deterministicContext: {
-              topic,
-              materialIds: materials.map((material) => material.id),
-              materialSummaries: materials.map((material) => ({
-                id: material.id,
-                title: material.title,
-                summary: material.summary
-              })),
-              riskAssessment,
-              healthLiteracySignals
+          input: [
+            ...priorTurns,
+            {
+              role: "user",
+              content: JSON.stringify({
+                youthMessage: message,
+                ageBand,
+                language,
+                deterministicContext: {
+                  topic,
+                  materialIds: materials.map((material) => material.id),
+                  materialSummaries: materials.map((material) => ({
+                    id: material.id,
+                    title: material.title,
+                    summary: material.summary
+                  })),
+                  riskAssessment,
+                  healthLiteracySignals
+                }
+              })
             }
-          }),
+          ],
           max_output_tokens: 700
         })
       });
